@@ -1,10 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('page-title', 'Nuevo Instalador')
-@section('page-subtitle', 'Crear registro')
 
-{{-- resources/views/administracion/instaladores/edit.blade.php --}}
-@extends('layouts.dashboard')
 
 @section('page-title', 'Editar Instalador')
 @section('page-subtitle', 'Actualizar registro')
