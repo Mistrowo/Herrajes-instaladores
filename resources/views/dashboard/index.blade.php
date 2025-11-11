@@ -441,13 +441,12 @@ function dashboardData() {
             // window.location.href = `/checklist/${this.notaSeleccionada.folio}`;
         },
 
-        abrirEvidencia() {
-            if (!this.notaSeleccionada.folio) return;
-            
-            showAlert('info', `Abriendo EVIDENCIA FOTOGRÁFICA para NV: ${this.notaSeleccionada.folio_formateado}`);
-            // TODO: Implementar ruta y funcionalidad
-            // window.location.href = `/evidencias/${this.notaSeleccionada.folio}`;
-        }
+       abrirEvidencia() {
+    if (!this.notaSeleccionada.folio) return;
+
+    // Redirecciona directamente a la vista de evidencia
+    window.location.href = `/dashboard/evidencias/${this.notaSeleccionada.folio}`;
+},
     }
 }
 </script>
