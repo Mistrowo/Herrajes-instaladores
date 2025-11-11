@@ -71,4 +71,37 @@ class Checklist extends Model
     {
         return $this->belongsTo(Instalador::class, 'instalador_id');
     }
+
+    public function hasAnyErrors(): bool
+{
+    return $this->errores_ventas ||
+           $this->errores_diseno ||
+           $this->errores_rectificacion ||
+           $this->errores_produccion ||
+           $this->errores_proveedor ||
+           $this->errores_despacho ||
+           $this->errores_instalacion ||
+           $this->errores_otro;
+}
+
+public function countErrors(): int
+{
+    return (int) (
+        $this->errores_ventas +
+        $this->errores_diseno +
+        $this->errores_rectificacion +
+        $this->errores_produccion +
+        $this->errores_proveedor +
+        $this->errores_despacho +
+        $this->errores_instalacion +
+        $this->errores_otro
+    );
+}
+
+
+
+
+
+
+
 }

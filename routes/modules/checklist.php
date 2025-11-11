@@ -15,4 +15,7 @@ Route::middleware(['auth'])
         Route::post('/checklist/{folio}', [ChecklistController::class, 'store'])
             ->name('checklist.store')
             ->where('folio', '[0-9]+');
+
+
+
     });

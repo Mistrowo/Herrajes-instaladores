@@ -22,15 +22,9 @@ class ChecklistController extends Controller
 
     public function store(Request $request, $folio)
     {
-        $request->validate([
-            'telefono' => 'nullable|string|max:20',
-            'mod_autorizadas_por' => 'nullable|string|max:100',
-            'observaciones' => 'nullable|string',
-            '*.rectificacion_medidas' => 'boolean',
-        ]);
-
         $this->checklistService->storeOrUpdate($folio, $request->except('_token'));
-
         return back()->with('success', 'Checklist guardado correctamente.');
     }
+
+    
 }
