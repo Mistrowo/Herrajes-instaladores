@@ -433,14 +433,10 @@ function dashboardData() {
 },
 
 
-        abrirChecklist() {
-            if (!this.notaSeleccionada.folio) return;
-            
-            showAlert('info', `Abriendo CHECKLIST para NV: ${this.notaSeleccionada.folio_formateado}`);
-            // TODO: Implementar ruta y funcionalidad
-            // window.location.href = `/checklist/${this.notaSeleccionada.folio}`;
-        },
-
+       abrirChecklist() {
+    if (!this.notaSeleccionada.folio) return;
+    window.location.href = `/dashboard/checklist/${this.notaSeleccionada.folio}`;
+},
        abrirEvidencia() {
     if (!this.notaSeleccionada.folio) return;
 

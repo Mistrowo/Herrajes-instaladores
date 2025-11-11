@@ -38,7 +38,7 @@ class EvidenciaService
             'imagen_path' => $path,
             'descripcion' => $descripcion,
         ]);
-    }//sexo
+    }
 
     public function deleteEvidencia(int $id): bool
     {
