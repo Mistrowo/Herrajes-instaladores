@@ -1,14 +1,20 @@
 <?php
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HerrajeController;
 
-Route::get('/herrajes/{folio}', [HerrajeController::class, 'showByFolio']);
+Route::middleware(['auth'])
+    ->prefix('dashboard')                
+    ->group(function () {
 
-    Route::prefix('api/herrajes')->group(function () {
-        Route::put('/{herraje}', [HerrajeController::class, 'updateHeader']);
-        Route::get('/{herraje}/items', [HerrajeController::class, 'items']);
-        Route::post('/{herraje}/items', [HerrajeController::class, 'storeItem']);
-        Route::put('/{herraje}/items/{item}', [HerrajeController::class, 'updateItem']);
-        Route::delete('/{herraje}/items/{item}', [HerrajeController::class, 'destroyItem']);
-    });
+        Route::get('/herrajes/{folio}', [HerrajeController::class, 'showByFolio'])
+            ->name('herrajes.show')
+            ->where('folio', '[0-9]+');
+
+        Route::prefix('herrajes/api')->name('herrajes.api.')->group(function () {
+            Route::put('/{herraje}', [HerrajeController::class, 'updateHeader'])->name('update-header');
+            Route::get('/{herraje}/items', [HerrajeController::class, 'items'])->name('items');
+            Route::post('/{herraje}/items', [HerrajeController::class, 'storeItem'])->name('store-item');
+            Route::put('/{herraje}/items/{item}', [HerrajeController::class, 'updateItem'])->name('update-item');
+            Route::delete('/{herraje}/items/{item}', [HerrajeController::class, 'destroyItem'])->name('destroy-item');
+        });
+});

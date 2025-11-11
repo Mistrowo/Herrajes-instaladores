@@ -427,10 +427,11 @@ function dashboardData() {
             // window.location.href = `/ordenes-compra/${this.notaSeleccionada.folio}`;
         },
 
-        abrirHerraje() {
-    if (!this.notaSeleccionada.folio) return;
-    window.location.href = `/herrajes/${this.notaSeleccionada.folio}`;
+    abrirHerraje() {
+  if (!this.notaSeleccionada.folio) return;
+  window.location.href = `dashboard/herrajes/${this.notaSeleccionada.folio}`; 
 },
+
 
         abrirChecklist() {
             if (!this.notaSeleccionada.folio) return;
