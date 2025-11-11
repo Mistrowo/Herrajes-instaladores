@@ -1,112 +1,97 @@
-Sistema de Gestión de Instalaciones - Ilesa
+# Sistema de Gestión de Instalaciones - Ilesa
+
 Sistema web desarrollado en Laravel para la gestión integral de instalaciones de herrajes y mobiliario. Permite administrar notas de venta, asignar instaladores, gestionar herrajes, evidencias fotográficas y checklists de instalación.
-📋 Características Principales
-Gestión de Usuarios
 
-Roles diferenciados: Administrador, Supervisor e Instalador
-Sistema de autenticación seguro
-Gestión de instaladores (CRUD completo)
-Control de estado activo/inactivo
+## 📋 Características Principales
 
-Dashboard Inteligente
+### Gestión de Usuarios
+- **Roles diferenciados**: Administrador, Supervisor e Instalador
+- Sistema de autenticación seguro
+- Gestión de instaladores (CRUD completo)
+- Control de estado activo/inactivo
 
-Vista personalizada según rol de usuario
-Búsqueda y selección de notas de venta
-Acceso rápido a:
+### Dashboard Inteligente
+- Vista personalizada según rol de usuario
+- Búsqueda y selección de notas de venta
+- Acceso rápido a:
+  - Planos
+  - Órdenes de Compra
+  - Herrajes
+  - Checklist
+  - Evidencia Fotográfica
 
-Planos
-Órdenes de Compra
-Herrajes
-Checklist
-Evidencia Fotográfica
+### Módulo de Asignaciones
+- Asignación de hasta 4 instaladores por nota de venta
+- Estados: Pendiente, Aceptada, Rechazada, En Proceso, Completada
+- Vista dedicada "Mis Asignaciones" para instaladores
+- Seguimiento de fechas de asignación y aceptación
 
+### Gestión de Herrajes
+- Creación y gestión de ítems de herraje por nota de venta
+- Campos: Descripción, Cantidad
+- Cálculo automático de totales
+- Estados: En Revisión, Aprobado, Rechazado
 
+### Evidencia Fotográfica
+- Carga de imágenes (PNG, JPG, WEBP hasta 5MB)
+- Descripción opcional por imagen
+- Galería organizada por nota de venta
+- Trazabilidad: registro de instalador y fecha de subida
 
-Módulo de Asignaciones
+### Checklist de Instalación
+- Formulario completo de verificación
+- Secciones:
+  - Número Proyecto/Pedido
+  - Errores de Proyecto
+  - Estado de Obra
+  - Inspección Final
+- Registro de observaciones y autorizaciones
 
-Asignación de hasta 4 instaladores por nota de venta
-Estados: Pendiente, Aceptada, Rechazada, En Proceso, Completada
-Vista dedicada "Mis Asignaciones" para instaladores
-Seguimiento de fechas de asignación y aceptación
+## 🛠️ Stack Tecnológico
 
-Gestión de Herrajes
+- **Backend**: Laravel 10.x
+- **Frontend**: 
+  - TailwindCSS 3.x
+  - Alpine.js 3.x
+  - SweetAlert2
+- **Base de Datos**: 
+  - MySQL (local)
+  - SQL Server (notas de venta)
+- **Otros**:
+  - Blade Templates
+  - Alpine.js Components
 
-Creación y gestión de ítems de herraje por nota de venta
-Campos: Descripción, Cantidad
-Cálculo automático de totales
-Estados: En Revisión, Aprobado, Rechazado
+## 📦 Requisitos
 
-Evidencia Fotográfica
+- PHP >= 8.1
+- Composer
+- MySQL >= 5.7
+- SQL Server (para conexión a notas de venta)
+- Node.js y NPM (para assets)
 
-Carga de imágenes (PNG, JPG, WEBP hasta 5MB)
-Descripción opcional por imagen
-Galería organizada por nota de venta
-Trazabilidad: registro de instalador y fecha de subida
+## 🚀 Instalación
 
-Checklist de Instalación
-
-Formulario completo de verificación
-Secciones:
-
-Número Proyecto/Pedido
-Errores de Proyecto
-Estado de Obra
-Inspección Final
-
-
-Registro de observaciones y autorizaciones
-
-🛠️ Stack Tecnológico
-
-Backend: Laravel 10.x
-Frontend:
-
-TailwindCSS 3.x
-Alpine.js 3.x
-SweetAlert2
-
-
-Base de Datos:
-
-MySQL (local)
-SQL Server (notas de venta)
-
-
-Otros:
-
-Blade Templates
-Livewire (componentes)
-
-
-
-📦 Requisitos
-
-PHP >= 8.1
-Composer
-MySQL >= 5.7
-SQL Server (para conexión a notas de venta)
-Node.js y NPM (para assets)
-
-🚀 Instalación
-
-Clonar el repositorio
-
-bashgit clone [url-del-repositorio]
+1. **Clonar el repositorio**
+```bash
+git clone [url-del-repositorio]
 cd [nombre-proyecto]
+```
 
-Instalar dependencias
-
-bashcomposer install
+2. **Instalar dependencias**
+```bash
+composer install
 npm install
+```
 
-Configurar entorno
-
-bashcp .env.example .env
+3. **Configurar entorno**
+```bash
+cp .env.example .env
 php artisan key:generate
+```
 
-Configurar base de datos en .env
-
-env# MySQL (base principal)
+4. **Configurar base de datos en `.env`**
+```env
+# MySQL (base principal)
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -120,28 +105,33 @@ DB_PORT_SOFT=1433
 DB_DATABASE_SOFT=base_datos_soft
 DB_USERNAME_SOFT=usuario
 DB_PASSWORD_SOFT=contraseña
+```
 
-Ejecutar migraciones
+5. **Ejecutar migraciones**
+```bash
+php artisan migrate
+```
 
-bashphp artisan migrate
+6. **Seeders (datos de prueba)**
+```bash
+php artisan db:seed
+```
 
-Seeders (datos de prueba)
+7. **Crear enlace simbólico para storage**
+```bash
+php artisan storage:link
+```
 
-bashphp artisan db:seed
-
-Crear enlace simbólico para storage
-
-bashphp artisan storage:link
-
-Compilar assets
-
-bashnpm run dev
+8. **Compilar assets**
+```bash
+npm run dev
 # o para producción
 npm run build
+```
 
-Iniciar servidor
-
-bashphp artisan serve
+9. **Iniciar servidor**
+```bash
+php artisan serve
 ```
 
 ## 👤 Usuarios de Prueba
@@ -203,99 +193,261 @@ Después de ejecutar los seeders:
 │       └── mis-asignaciones/
 └── routes/
     └── modules/
-🔐 Roles y Permisos
-Administrador
+        ├── administracion.php
+        ├── asignar.php
+        ├── auth.php
+        ├── checklist.php
+        ├── evidencia.php
+        ├── herrajes.php
+        └── mis_asignaciones.php
+```
 
-Acceso completo al sistema
-Gestión de instaladores
-Asignación de trabajos
-Visualización de todas las notas de venta
+## 🔐 Roles y Permisos
 
-Supervisor
+### Administrador
+- Acceso completo al sistema
+- Gestión de instaladores (CRUD)
+- Asignación de trabajos
+- Visualización de todas las notas de venta
+- Gestión de todos los módulos
 
-Gestión de asignaciones
-Visualización de reportes
-Acceso a "Mis Asignaciones"
+### Supervisor
+- Gestión de asignaciones
+- Visualización de reportes
+- Acceso a "Mis Asignaciones"
+- Supervisión de instaladores
 
-Instalador
+### Instalador
+- Vista "Mis Asignaciones"
+- Aceptar/rechazar trabajos
+- Gestión de herrajes asignados
+- Carga de evidencias fotográficas
+- Completar checklists
+- Actualizar estado de trabajos
 
-Vista "Mis Asignaciones"
-Aceptar/rechazar trabajos
-Gestión de herrajes asignados
-Carga de evidencias fotográficas
-Completar checklists
+## 📊 Módulos del Sistema
 
-📊 Módulos del Sistema
-1. Dashboard
+### 1. Dashboard
+- Búsqueda de notas de venta con paginación
+- Información detallada del proyecto
+- Acceso rápido a módulos principales
+- Visualización de datos del cliente
 
-Búsqueda de notas de venta
-Información del proyecto
-Acceso rápido a módulos
+### 2. Asignaciones
+- Crear nuevas asignaciones
+- Asignar hasta 4 instaladores por trabajo
+- Gestionar estados del flujo de trabajo
+- Filtros por estado, fecha y nota de venta
+- Visualización de equipo de trabajo
 
-2. Asignaciones
+### 3. Herrajes
+- Gestión de ítems por nota de venta
+- Agregar/Editar/Eliminar items
+- Cálculo automático de cantidades totales
+- Estados: En Revisión, Aprobado, Rechazado
+- Observaciones por herraje
 
-Crear asignaciones
-Asignar hasta 4 instaladores
-Gestionar estados
-Filtros por estado y fecha
+### 4. Evidencias Fotográficas
+- Carga múltiple de imágenes
+- Formatos soportados: PNG, JPG, WEBP
+- Tamaño máximo: 5MB por imagen
+- Galería organizada por nota de venta
+- Descripción opcional por imagen
+- Eliminación de evidencias
 
-3. Herrajes
+### 5. Checklist
+- Formulario acordeón interactivo
+- Validación completa de instalación
+- Registro de errores por categoría
+- Observaciones detalladas
+- Autorización de modificaciones
+- Estado de obra al momento de instalación
+- Inspección final con múltiples checkpoints
 
-Gestión de ítems por nota de venta
-Cálculo automático de totales
-Estados de aprobación
+## 🔧 Configuración Adicional
 
-4. Evidencias Fotográficas
-
-Carga múltiple de imágenes
-Galería organizada
-Descripciones por imagen
-
-5. Checklist
-
-Formulario acordeón
-Validación de instalación
-Registro de errores y observaciones
-
-🔧 Configuración Adicional
-Permisos de Storage
-bashchmod -R 775 storage
+### Permisos de Storage
+```bash
+chmod -R 775 storage
 chmod -R 775 bootstrap/cache
-Configuración de Gates
-Los Gates se definen en AuthServiceProvider.php:
+```
 
-admin-only: Solo administradores
-supervisor-only: Solo supervisores
-instalador-only: Solo instaladores
-admin-or-supervisor: Administradores o supervisores
+### Configuración de Gates
+Los Gates se definen en `AuthServiceProvider.php`:
+- `admin-only`: Solo administradores
+- `supervisor-only`: Solo supervisores
+- `instalador-only`: Solo instaladores
+- `admin-or-supervisor`: Administradores o supervisores
 
-📝 Convenciones de Código
+### Middleware Personalizado
+- `active.instalador`: Verifica que el instalador esté activo
+- `role`: Verifica roles específicos del usuario
 
-PSR-12: Estándar de codificación PHP
-Blade: Templates para vistas
-Alpine.js: Interactividad frontend
-Tailwind CSS: Clases de utilidad para estilos
+## 🗄️ Base de Datos
 
-🐛 Solución de Problemas
-Error de conexión a SQL Server
-Verificar extensión pdo_sqlsrv instalada y configurada en PHP.
-Imágenes no se visualizan
-Ejecutar: php artisan storage:link
-Error 403 en rutas protegidas
-Verificar que el usuario tenga el rol correcto asignado.
-🤝 Contribución
+### Tablas Principales
+
+#### sh_instalador
+Gestión de usuarios instaladores
+- id, usuario, nombre, telefono, correo, rut
+- password, activo, rol
+- timestamps, soft deletes
+
+#### sh_asigna
+Asignaciones de trabajo
+- id, nota_venta, solicita
+- asignado1, asignado2, asignado3, asignado4
+- fecha_asigna, fecha_acepta, estado
+- terminado, fecha_termino
+- timestamps, soft deletes
+
+#### sh_herraje
+Documentos de herraje
+- id, nv_folio, asigna_id, instalador_id
+- estado, items_count, total_estimado
+- observaciones, created_by, updated_by
+- timestamps, soft deletes
+
+#### sh_herraje_items
+Items de herraje
+- id, herraje_id, codigo, descripcion
+- unidad, cantidad, precio, observaciones
+- timestamps, soft deletes
+
+#### sh_evidencia_fotografica
+Evidencias fotográficas
+- id, asigna_id, nota_venta, instalador_id
+- imagen_path, descripcion, fecha_subida
+- timestamps, soft deletes
+
+#### sh_checklist
+Checklist de instalación
+- id, asigna_id, nota_venta, instalador_id
+- Múltiples campos de verificación
+- observaciones, telefono, fecha_completado
+- timestamps, soft deletes
+
+## 📝 Convenciones de Código
+
+- **PSR-12**: Estándar de codificación PHP
+- **Blade**: Templates para vistas
+- **Alpine.js**: Interactividad frontend
+- **Tailwind CSS**: Clases de utilidad para estilos
+- **Services**: Lógica de negocio separada de controladores
+- **Requests**: Validación de formularios
+
+## 🎨 Frontend
+
+### Componentes Blade
+- `<x-sidebar>`: Navegación lateral
+- `<x-accordion-item>`: Items de acordeón
+- `<x-check-item>`: Items de checkbox
+
+### Alpine.js Components
+- `dashboardData()`: Lógica del dashboard
+- `herrajeForm()`: Gestión de herrajes
+- `checklistAccordion()`: Acordeón del checklist
+
+### Estilos
+- TailwindCSS para todos los estilos
+- Diseño responsive mobile-first
+- Tema personalizado de Ilesa
+
+## 🐛 Solución de Problemas
+
+### Error de conexión a SQL Server
+Verificar que la extensión `pdo_sqlsrv` esté instalada y configurada en PHP.
+```bash
+# Verificar extensión
+php -m | grep sqlsrv
+```
+
+### Imágenes no se visualizan
+Ejecutar el comando para crear el enlace simbólico:
+```bash
+php artisan storage:link
+```
+
+### Error 403 en rutas protegidas
+Verificar que el usuario tenga el rol correcto asignado en la base de datos.
+
+### Error al subir imágenes
+Verificar permisos de escritura en storage:
+```bash
+chmod -R 775 storage/app/public
+```
+
+### Error en migraciones
+Limpiar y reiniciar migraciones:
+```bash
+php artisan migrate:fresh --seed
+```
+
+## 🚦 Testing
+```bash
+# Ejecutar tests
+php artisan test
+
+# Con coverage
+php artisan test --coverage
+```
+
+## 📈 Mejoras Futuras
+
+- [ ] Módulo de reportes avanzados
+- [ ] Notificaciones en tiempo real
+- [ ] Aplicación móvil para instaladores
+- [ ] Integración con sistema ERP
+- [ ] Dashboard con gráficos estadísticos
+- [ ] Exportación de reportes a PDF
+- [ ] Sistema de firma digital
+- [ ] Geolocalización de instalaciones
+
+## 🤝 Contribución
+
 Este es un proyecto interno de Ilesa. Para contribuir:
 
-Crear una rama desde develop
-Realizar cambios y commits descriptivos
-Crear Pull Request hacia develop
-Esperar revisión del equipo
+1. Crear una rama desde `develop`
+2. Realizar cambios y commits descriptivos
+3. Seguir las convenciones de código
+4. Crear Pull Request hacia `develop`
+5. Esperar revisión del equipo
 
-📄 Licencia
+### Commits
+Seguir convención de commits semánticos:
+- `feat:` Nueva funcionalidad
+- `fix:` Corrección de bug
+- `docs:` Documentación
+- `style:` Cambios de formato
+- `refactor:` Refactorización de código
+- `test:` Añadir o modificar tests
+
+## 📄 Licencia
+
 Propiedad de Ilesa. Todos los derechos reservados.
-📞 Contacto
-Para soporte o consultas sobre el sistema, contactar al equipo de desarrollo interno.
 
-Versión: 1.0.0
-Última actualización: Noviembre 2025
-Desarrollado por: Equipo Ilesa
+## 📞 Contacto y Soporte
+
+Para soporte o consultas sobre el sistema:
+- **Email**: soporte@ilesa.com
+- **Teléfono**: +56 X XXXX XXXX
+- **Equipo de Desarrollo**: Interno Ilesa
+
+## 🔄 Historial de Versiones
+
+### v1.0.0 (Noviembre 2025)
+- ✅ Sistema de autenticación completo
+- ✅ Gestión de instaladores
+- ✅ Módulo de asignaciones
+- ✅ Gestión de herrajes
+- ✅ Evidencias fotográficas
+- ✅ Checklist de instalación
+- ✅ Dashboard principal
+- ✅ Mis Asignaciones para instaladores
+
+---
+
+**Versión**: 1.0.0  
+**Última actualización**: Noviembre 2025  
+**Desarrollado por**: Equipo Ilesa  
+**Tecnología**: Laravel 10.x + TailwindCSS + Alpine.js
