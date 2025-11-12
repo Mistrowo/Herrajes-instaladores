@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Models\Ventas\Fasecomercialproyecto;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -38,7 +40,19 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout.get');
 
-   
+
+Route::get('/dashboard/descargar-oc/{folio}', function ($folio) {
+    $fase = Fasecomercialproyecto::where('folio_nv', $folio)->first();
+
+    if (!$fase || !$fase->oc_proveedores()) {
+        abort(404, 'OC no encontrada');
+    }
+
+    $media = $fase->oc_proveedores();
+    $url = "https://clientes.ohffice.cl/storage/{$media->id}/{$media->file_name}";
+
+    return redirect()->away($url);
+})->name('dashboard.descargar-oc');
  
 
    

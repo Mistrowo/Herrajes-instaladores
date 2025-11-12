@@ -1,4 +1,4 @@
-# Sistema de Gestión de Instalaciones - Ilesa
+# Sistema de Gestión de Instalaciones - Ohffice
 
 Sistema web desarrollado en Laravel para la gestión integral de instalaciones de herrajes y mobiliario. Permite administrar notas de venta, asignar instaladores, gestionar herrajes, evidencias fotográficas y checklists de instalación.
 
@@ -140,9 +140,9 @@ Después de ejecutar los seeders:
 
 | Rol | Email | Contraseña |
 |-----|-------|-----------|
-| Administrador | admin@ilesa.com | admin123 |
-| Supervisor | supervisor@ilesa.com | supervisor123 |
-| Instalador | diego@ilesa.com | diego123 |
+| Administrador | admin@Ohffice.com | admin123 |
+| Supervisor | supervisor@Ohffice.com | supervisor123 |
+| Instalador | diego@Ohffice.com | diego123 |
 
 ## 📁 Estructura del Proyecto
 ```
@@ -351,7 +351,7 @@ Checklist de instalación
 ### Estilos
 - TailwindCSS para todos los estilos
 - Diseño responsive mobile-first
-- Tema personalizado de Ilesa
+- Tema personalizado de Ohffice
 
 ## 🐛 Solución de Problemas
 
@@ -405,7 +405,7 @@ php artisan test --coverage
 
 ## 🤝 Contribución
 
-Este es un proyecto interno de Ilesa. Para contribuir:
+Este es un proyecto interno de Ohffice. Para contribuir:
 
 1. Crear una rama desde `develop`
 2. Realizar cambios y commits descriptivos
@@ -424,14 +424,14 @@ Seguir convención de commits semánticos:
 
 ## 📄 Licencia
 
-Propiedad de Ilesa. Todos los derechos reservados.
+Propiedad de Ohffice. Todos los derechos reservados.
 
 ## 📞 Contacto y Soporte
 
 Para soporte o consultas sobre el sistema:
-- **Email**: soporte@ilesa.com
+- **Email**: soporte@Ohffice.cl
 - **Teléfono**: +56 X XXXX XXXX
-- **Equipo de Desarrollo**: Interno Ilesa
+- **Equipo de Desarrollo**: Interno Ohffice
 
 ## 🔄 Historial de Versiones
 
@@ -449,5 +449,5 @@ Para soporte o consultas sobre el sistema:
 
 **Versión**: 1.0.0  
 **Última actualización**: Noviembre 2025  
-**Desarrollado por**: Equipo Ilesa  
+**Desarrollado por**: Equipo Ohffice  
 **Tecnología**: Laravel 10.x + TailwindCSS + Alpine.js

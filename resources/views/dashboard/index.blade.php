@@ -7,12 +7,10 @@
 @section('content')
 <div class="p-4 sm:p-6 lg:p-8" x-data="dashboardData()">
     
-    <!-- Header con Buttons -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
         <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
             <div class="flex flex-wrap md:flex-nowrap justify-center gap-2 overflow-x-auto pb-2">
                 
-                <!-- PLANO -->
                 <button @click="abrirPlano()"
                         :disabled="!notaSeleccionada.folio"
                         :class="notaSeleccionada.folio ? 'bg-white hover:bg-gray-50 hover:border-blue-500 hover:text-blue-700 cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-50'"
@@ -20,7 +18,6 @@
                     📋 PLANO
                 </button>
                 
-                <!-- OC -->
                 <button @click="abrirOC()"
                         :disabled="!notaSeleccionada.folio"
                         :class="notaSeleccionada.folio ? 'bg-white hover:bg-gray-50 hover:border-blue-500 hover:text-blue-700 cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-50'"
@@ -28,7 +25,6 @@
                     📄 OC
                 </button>
                 
-                <!-- HERRAJE -->
                 <button @click="abrirHerraje()"
                         :disabled="!notaSeleccionada.folio"
                         :class="notaSeleccionada.folio ? 'bg-white hover:bg-gray-50 hover:border-blue-500 hover:text-blue-700 cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-50'"
@@ -36,7 +32,6 @@
                     🔧 HERRAJE
                 </button>
                 
-                <!-- CHECKLIST -->
                 <button @click="abrirChecklist()"
                         :disabled="!notaSeleccionada.folio"
                         :class="notaSeleccionada.folio ? 'bg-white hover:bg-gray-50 hover:border-blue-500 hover:text-blue-700 cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-50'"
@@ -67,17 +62,14 @@
         </div>
     </div>
 
-    <!-- Information Grid -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-6 py-4 border-b border-gray-100 bg-green-50">
             <h3 class="text-base font-bold text-gray-900">INFORMACIÓN DEL PROYECTO</h3>
         </div>
         
         <div class="p-6">
-            <!-- Grid Responsivo -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 
-                <!-- Nota de Venta con Búsqueda -->
                 <div class="lg:col-span-3">
                     <label class="block text-sm font-bold text-gray-700 mb-2">NOTA DE VENTA</label>
                     <div class="relative">
@@ -97,7 +89,6 @@
                     </div>
                 </div>
                 
-                <!-- Cliente -->
                 <div class="lg:col-span-3">
                     <label class="block text-sm font-bold text-gray-700 mb-2">CLIENTE</label>
                     <input type="text" 
@@ -107,7 +98,6 @@
                            class="w-full px-3 py-2 bg-green-100 border-2 border-green-300 rounded-lg text-gray-900 font-medium">
                 </div>
                 
-                <!-- Descripción / Proyecto -->
                 <div class="lg:col-span-3">
                     <label class="block text-sm font-bold text-gray-700 mb-2">NOMBRE PROYECTO</label>
                     <input type="text" 
@@ -117,7 +107,6 @@
                            class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-gray-900">
                 </div>
                 
-                <!-- Estado -->
                 <div class="lg:col-span-3">
                     <label class="block text-sm font-bold text-gray-700 mb-2">ESTADO</label>
                     <input type="text" 
@@ -129,10 +118,8 @@
                 
             </div>
             
-            <!-- Segunda Fila -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 mt-4">
                 
-                <!-- Vendedor/Ejecutivo -->
                 <div class="lg:col-span-3">
                     <label class="block text-sm font-bold text-gray-700 mb-2">EJECUTIVO</label>
                     <input type="text" 
@@ -142,7 +129,6 @@
                            class="w-full px-3 py-2 bg-white border-2 border-gray-300 rounded-lg text-gray-900">
                 </div>
                 
-                <!-- Fecha Emisión -->
                 <div class="lg:col-span-2">
                     <label class="block text-sm font-bold text-gray-700 mb-2">FECHA EMISIÓN</label>
                     <input type="text" 
@@ -152,7 +138,6 @@
                            class="w-full px-3 py-2 bg-green-100 border-2 border-green-300 rounded-lg text-gray-900 font-medium">
                 </div>
                 
-                <!-- Fecha Entrega -->
                 <div class="lg:col-span-2">
                     <label class="block text-sm font-bold text-gray-700 mb-2">FECHA ENTREGA</label>
                     <input type="text" 
@@ -162,7 +147,6 @@
                            class="w-full px-3 py-2 bg-green-100 border-2 border-green-300 rounded-lg text-gray-900 font-medium">
                 </div>
                 
-                <!-- Fecha Asignación -->
                 <div class="lg:col-span-2" x-show="asignacion.fecha_asigna">
                     <label class="block text-sm font-bold text-gray-700 mb-2">FECHA ASIGNACIÓN</label>
                     <input type="text" 
@@ -175,7 +159,6 @@
         </div>
     </div>
     
-    <!-- Observaciones/Instrucciones -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 mt-6" x-show="asignacion.observaciones">
         <div class="px-6 py-4 border-b border-gray-100">
             <h3 class="text-base font-bold text-gray-900">INSTRUCCIONES / OBSERVACIONES</h3>
@@ -189,18 +172,15 @@
         </div>
     </div>
 
-    <!-- Modal de Búsqueda de Notas de Venta -->
     <div x-show="showModal" 
          x-cloak
          @keydown.escape.window="cerrarModal()"
          class="fixed inset-0 z-50 overflow-y-auto"
          style="display: none;">
         
-        <!-- Overlay -->
         <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
              @click="cerrarModal()"></div>
         
-        <!-- Modal -->
         <div class="flex items-center justify-center min-h-screen p-4">
             <div @click.away="cerrarModal()"
                  x-transition:enter="transition ease-out duration-300"
@@ -211,7 +191,6 @@
                  x-transition:leave-end="opacity-0 scale-90"
                  class="bg-white rounded-xl shadow-2xl w-full max-w-2xl relative">
                 
-                <!-- Header -->
                 <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-indigo-600">
                     <div class="flex items-center justify-between">
                         <h3 class="text-xl font-bold text-white">Buscar Nota de Venta</h3>
@@ -224,7 +203,6 @@
                     </div>
                 </div>
                 
-                <!-- Search -->
                 <div class="p-6 border-b border-gray-200">
                     <div class="relative">
                         <input type="text" 
@@ -239,15 +217,12 @@
                     </div>
                 </div>
                 
-                <!-- Lista de Notas -->
                 <div class="p-6 max-h-96 overflow-y-auto">
-                    <!-- Loading -->
                     <div x-show="cargando" class="text-center py-8">
                         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                         <p class="text-gray-500 mt-2">Cargando...</p>
                     </div>
 
-                    <!-- Lista -->
                     <div x-show="!cargando" class="space-y-3">
                         <template x-for="nota in notasVenta" :key="nota.nv_id">
                             <button @click="seleccionarNota(nota)"
@@ -269,7 +244,6 @@
                             </button>
                         </template>
 
-                        <!-- Sin resultados -->
                         <div x-show="!cargando && notasVenta.length === 0" class="text-center py-8">
                             <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -279,7 +253,6 @@
                     </div>
                 </div>
                 
-                <!-- Footer con Paginación -->
                 <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
                     <div class="flex items-center justify-between">
                         <button @click="cambiarPagina(paginaActual - 1)"
@@ -409,23 +382,20 @@ function dashboardData() {
             }
         },
 
-        // ====== FUNCIONES DE LOS BOTONES ======
         
-        abrirPlano() {
-            if (!this.notaSeleccionada.folio) return;
-            
-            showAlert('info', `Abriendo PLANO para NV: ${this.notaSeleccionada.folio_formateado}`);
-            // TODO: Implementar ruta y funcionalidad
-            // window.location.href = `/planos/${this.notaSeleccionada.folio}`;
-        },
+     abrirPlano() {
+    if (!this.notaSeleccionada.folio) return;
+    const url = `dashboard/fft/${this.notaSeleccionada.folio}`;
+    window.open(url, '_blank');
+    showAlert('info', `Abriendo FFT: NV-${this.notaSeleccionada.folio_formateado}`);
+},
 
-        abrirOC() {
-            if (!this.notaSeleccionada.folio) return;
-            
-            showAlert('info', `Abriendo OC para NV: ${this.notaSeleccionada.folio_formateado}`);
-            // TODO: Implementar ruta y funcionalidad
-            // window.location.href = `/ordenes-compra/${this.notaSeleccionada.folio}`;
-        },
+abrirOC() {
+    if (!this.notaSeleccionada.folio) return;
+    const url = `dashboard/oc/${this.notaSeleccionada.folio}`;
+    window.open(url, '_blank');
+    showAlert('success', `Abriendo OC: NV-${this.notaSeleccionada.folio_formateado}`);
+},
 
     abrirHerraje() {
   if (!this.notaSeleccionada.folio) return;
@@ -440,7 +410,6 @@ function dashboardData() {
        abrirEvidencia() {
     if (!this.notaSeleccionada.folio) return;
 
-    // Redirecciona directamente a la vista de evidencia
     window.location.href = `/dashboard/evidencias/${this.notaSeleccionada.folio}`;
 },
     }

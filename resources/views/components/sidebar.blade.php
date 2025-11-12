@@ -1,6 +1,5 @@
 <div x-data="{ sidebarOpen: false }" class="flex h-screen overflow-hidden">
     
-    <!-- Overlay para móvil -->
     <div x-show="sidebarOpen" 
          @click="sidebarOpen = false"
          x-transition:enter="transition-opacity ease-linear duration-300"
@@ -13,12 +12,10 @@
          style="display: none;">
     </div>
 
-    <!-- Sidebar -->
     <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
            class="fixed lg:static inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-blue-600 to-indigo-700 
                   transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex flex-col shadow-2xl">
         
-        <!-- Header del Sidebar -->
         <div class="flex items-center justify-between px-6 py-5 border-b border-blue-500/30">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center">
@@ -33,7 +30,6 @@
                 </div>
             </div>
             
-            <!-- Botón cerrar (móvil) -->
             <button @click="sidebarOpen = false" 
                     class="lg:hidden text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,7 +38,6 @@
             </button>
         </div>
         
-        <!-- User Info - Mostrar usuario de sesión -->
         <div class="px-6 py-4 border-b border-blue-500/30">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg shadow-lg">
@@ -63,10 +58,8 @@
             </div>
         </div>
         
-        <!-- Navigation -->
         <nav class="flex-1 overflow-y-auto px-4 py-6 space-y-2">
             
-            <!-- Dashboard / Inicio -->
             <a href="{{ route('dashboard') }}" 
                class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all
                       {{ request()->routeIs('dashboard') ? 'bg-white/20 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
@@ -77,7 +70,6 @@
                 <span>Inicio</span>
             </a>
 
-            {{-- Mis Asignaciones - Solo para instaladores --}}
             @if(auth()->user()->esInstalador() || auth()->user()->esSupervisor())
                 <a href="{{ route('mis-asignaciones.index') }}" 
                    class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all
@@ -90,14 +82,11 @@
                 </a>
             @endif
             
-            {{-- SOLO visible para administradores --}}
             @can('admin-only')
-                <!-- Divider -->
                 <div class="pt-4 pb-2">
                     <p class="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider">Administración</p>
                 </div>
 
-                <!-- Asignar Instaladores -->
                 <a href="{{ route('asignar.index') }}" 
                    class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all
                           {{ request()->routeIs('asignar.*') ? 'bg-white/20 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
@@ -108,7 +97,6 @@
                     <span>Asignar Instaladores</span>
                 </a>
 
-                <!-- CRUD INSTALADORES -->
                 <a href="{{ route('administracion.instaladores.index') }}" 
                    class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all
                           {{ request()->routeIs('administracion.instaladores.*') ? 'bg-white/20 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
@@ -122,9 +110,7 @@
             
         </nav>
         
-        <!-- Footer del Sidebar -->
         <div class="border-t border-blue-500/30 p-4">
-            <!-- Salir / Logout -->
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-blue-100 hover:bg-red-500/20 hover:text-white transition-all">
@@ -136,21 +122,17 @@
                 </button>
             </form>
             
-            <!-- Copyright -->
             <div class="mt-3 text-center text-xs text-blue-200">
-                © {{ date('Y') }} Ilesa
+                © {{ date('Y') }} Ohffice
             </div>
         </div>
         
     </aside>
     
-    <!-- Main Content Area -->
     <div class="flex-1 flex flex-col overflow-hidden bg-gray-50">
-        <!-- Header / Topbar -->
         <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
             <div class="flex items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
                 
-                <!-- Mobile Menu Button + Title -->
                 <div class="flex items-center gap-4">
                     <button @click="sidebarOpen = true" 
                             class="lg:hidden text-gray-600 hover:text-gray-900 focus:outline-none p-2 rounded-lg hover:bg-gray-100 transition">
@@ -166,7 +148,6 @@
                     </div>
                 </div>
                 
-                <!-- Notificaciones -->
                 <div class="flex items-center gap-3">
                     <button class="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,7 +160,6 @@
             </div>
         </header>
         
-        <!-- Content Area -->
         <main class="flex-1 overflow-y-auto">
             @yield('content')
         </main>

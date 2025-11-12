@@ -107,6 +107,7 @@ return [
         //'trust_server_certificate' => env('DB_TRUST_SERVER_CERT_SOFT', true),
     ],
 
+  
     ],
 
     /*
