@@ -1,3 +1,4 @@
+{{-- resources/views/checklist/index.blade.php --}}
 @extends('layouts.dashboard')
 
 @section('title', 'Checklist de Instalación')
@@ -9,6 +10,7 @@
     
     <div class="max-w-7xl mx-auto">
 
+        {{-- Alertas --}}
         @if(session('success'))
             <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 px-6 py-4 rounded-r-lg shadow-md animate-fadeIn">
                 <div class="flex items-center gap-3">
@@ -45,6 +47,7 @@
         <form id="checklistForm" action="{{ route('checklist.store', $asignacion->nota_venta) }}" method="POST" class="space-y-5">
             @csrf
 
+            {{-- SECCIÓN 1: NÚMERO PROYECTO/PEDIDO --}}
             <x-accordion-item title="📋 NÚMERO PROYECTO/PEDIDO" id="proyecto-pedido">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <x-si-no-item 
@@ -99,6 +102,7 @@
                 </div>
             </x-accordion-item>
 
+            {{-- SECCIÓN 2: ERRORES PROYECTO --}}
             <x-accordion-item title="⚠️ ERRORES PROYECTO" id="errores"
                 :badge="($checklist)?->hasAnyErrors() ? 'error' : null" 
                 :badge-count="($checklist)?->countErrors() ?? 0">
@@ -135,6 +139,7 @@
                 </div>
             </x-accordion-item>
 
+            {{-- SECCIÓN 3: ESTADO OBRA --}}
             <x-accordion-item title="🏗️ ESTADO OBRA AL MOMENTO DE LA INSTALACIÓN" id="estado-obra">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <x-si-no-item label="Instalación de Cielo" name="instalacion_cielo" 
@@ -154,6 +159,7 @@
                 </div>
             </x-accordion-item>
 
+            {{-- SECCIÓN 4: INSPECCIÓN FINAL --}}
             <x-accordion-item title="✅ INSPECCIÓN FINAL" id="inspeccion-final">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <x-si-no-item label="Paneles Alineados" name="paneles_alineados" 
@@ -183,8 +189,25 @@
                 </div>
             </x-accordion-item>
 
+            {{-- Botones de Acción --}}
             <div class="sticky bottom-0 bg-gradient-to-t from-gray-100 to-transparent pt-6 pb-4">
-                <div class="flex justify-end">
+                <div class="flex justify-between items-center gap-4 flex-wrap">
+                    {{-- Botón Descargar PDF --}}
+                    @if($checklist)
+                    <a href="{{ route('checklist.pdf', $asignacion->nota_venta) }}" 
+                       class="group px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white font-semibold rounded-lg hover:from-red-700 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
+                        <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <span>Descargar PDF</span>
+                    </a>
+                    @else
+                    <div class="text-sm text-gray-500 italic">
+                        💡 Guarda el checklist primero para descargarlo en PDF
+                    </div>
+                    @endif
+                    
+                    {{-- Botón Guardar --}}
                     <button type="button" id="submitButton" 
                             class="group px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
                         <svg class="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('checklistForm');
     const submitButton = document.getElementById('submitButton');
 
+    // Mostrar alertas con SweetAlert
     @if(session('success'))
         Swal.fire({
             icon: 'success',
@@ -240,6 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     @endif
 
+    // Confirmación antes de guardar
     submitButton.addEventListener('click', function(e) {
         e.preventDefault();
 
@@ -266,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
             buttonsStyling: true
         }).then((result) => {
             if (result.isConfirmed) {
+                // Mostrar loading mientras guarda
                 Swal.fire({
                     title: 'Guardando cambios...',
                     html: `
@@ -286,6 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
                 
+                // Enviar formulario
                 form.submit();
             }
         });
