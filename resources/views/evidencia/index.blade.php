@@ -6,7 +6,17 @@
 
 @section('content')
 <div class="p-4 sm:p-6 lg:p-8">
+  <div class="mb-6">
+    
 
+    <button onclick="volverDashboard()"
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Volver
+    </button>
+        </div>
   
     <!-- Formulario de Subida -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -88,6 +98,12 @@
 </div>
 
 <script>
+    function volverDashboard() {
+    const folio = '{{ $asignacion->nota_venta }}';
+    sessionStorage.setItem('dashboard_folio', folio);
+    
+    window.location.href = '{{ route("dashboard") }}';
+}
     document.getElementById('imagen').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {

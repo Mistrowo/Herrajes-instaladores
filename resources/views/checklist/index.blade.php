@@ -10,6 +10,17 @@
     
     <div class="max-w-7xl mx-auto">
 
+        {{-- Botón Volver al Dashboard --}}
+        <div class="mb-6">
+            <button onclick="volverDashboard()"
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Volver
+    </button>
+        </div>
+
         {{-- Alertas --}}
         @if(session('success'))
             <div class="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 px-6 py-4 rounded-r-lg shadow-md animate-fadeIn">
@@ -223,6 +234,16 @@
 
 @push('scripts')
 <script>
+// Función para volver al dashboard con el folio guardado
+function volverDashboard() {
+    // Guardar el folio actual en sessionStorage antes de volver
+    const folio = '{{ $asignacion->nota_venta }}';
+    sessionStorage.setItem('dashboard_folio', folio);
+    
+    // Redireccionar al dashboard
+    window.location.href = '{{ route("dashboard") }}';
+}
+
 document.addEventListener('alpine:init', () => {
     Alpine.store('accordion', {
         open: null

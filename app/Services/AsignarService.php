@@ -12,27 +12,37 @@ use Illuminate\Support\Facades\DB;
 class AsignarService
 {
     /**
-     * 
-     * @param array $filtros
-     * @param int $perPage
-     * @return LengthAwarePaginator
+     * Obtener notas de venta paginadas con filtros
      */
     public function obtenerNotasVentaPaginadas(array $filtros = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = NotaVtaActualiza::query();
 
+        // Filtro de búsqueda general (folio o cliente)
+        if (!empty($filtros['buscar'])) {
+            $buscar = $filtros['buscar'];
+            $query->where(function($q) use ($buscar) {
+                $q->where('nv_folio', 'like', '%' . $buscar . '%')
+                  ->orWhere('nv_cliente', 'like', '%' . $buscar . '%');
+            });
+        }
+
+        // Filtro específico de folio
         if (!empty($filtros['folio'])) {
-            $query->folio($filtros['folio']);
+            $query->where('nv_folio', 'like', '%' . $filtros['folio'] . '%');
         }
 
+        // Filtro específico de cliente
         if (!empty($filtros['cliente'])) {
-            $query->cliente($filtros['cliente']);
+            $query->where('nv_cliente', 'like', '%' . $filtros['cliente'] . '%');
         }
 
-        if (!empty($filtros['estado'])) {
-            $query->estado($filtros['estado']);
+        // Filtro de estado
+        if (!empty($filtros['estado_nv'])) {
+            $query->where('nv_estado', $filtros['estado_nv']);
         }
 
+        // Filtro de rango de fechas
         if (!empty($filtros['fecha_desde']) && !empty($filtros['fecha_hasta'])) {
             $query->whereBetween('nv_femision', [
                 $filtros['fecha_desde'],
@@ -42,28 +52,12 @@ class AsignarService
 
         return $query->orderBy('nv_femision', 'desc')
             ->orderBy('nv_folio', 'desc')
-            ->paginate($perPage);
+            ->paginate($perPage)
+            ->appends($filtros); // IMPORTANTE: Mantener filtros en paginación
     }
 
     /**
-     *
-     * @return Collection
-     */
-    public function obtenerTodasLasAsignaciones(): Collection
-    {
-        return Asigna::with([
-            'instalador1:id,nombre',
-            'instalador2:id,nombre',
-            'instalador3:id,nombre',
-            'instalador4:id,nombre'
-        ])->get();
-    }
-
-    /**
-     *
-     * @param array $filtros
-     * @param int $perPage
-     * @return LengthAwarePaginator
+     * Obtener asignaciones paginadas con filtros
      */
     public function obtenerAsignacionesPaginadas(array $filtros = [], int $perPage = 15): LengthAwarePaginator
     {
@@ -74,26 +68,32 @@ class AsignarService
             'instalador4:id,nombre,usuario'
         ]);
 
+        // Filtro de nota de venta
         if (!empty($filtros['nota_venta'])) {
             $query->where('nota_venta', 'like', '%' . $filtros['nota_venta'] . '%');
         }
 
+        // Filtro de estado
         if (!empty($filtros['estado'])) {
             $query->where('estado', $filtros['estado']);
         }
 
+        // Filtro de rango de fechas
         if (!empty($filtros['fecha_desde']) && !empty($filtros['fecha_hasta'])) {
-            $query->fechaAsignaEntre($filtros['fecha_desde'], $filtros['fecha_hasta']);
+            $query->whereBetween('fecha_asigna', [
+                $filtros['fecha_desde'],
+                $filtros['fecha_hasta']
+            ]);
         }
 
         return $query->orderBy('fecha_asigna', 'desc')
             ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+            ->paginate($perPage)
+            ->appends($filtros); // IMPORTANTE: Mantener filtros en paginación
     }
 
     /**
-     *
-     * @return Collection
+     * Obtener instaladores activos
      */
     public function obtenerInstaladoresActivos(): Collection
     {
@@ -103,9 +103,7 @@ class AsignarService
     }
 
     /**
-     *
-     * @param int $id
-     * @return Asigna
+     * Obtener asignación por ID
      */
     public function obtenerAsignacionPorId(int $id): Asigna
     {
@@ -118,31 +116,25 @@ class AsignarService
     }
 
     /**
-     *
-     * @param string $folio
-     * @return NotaVtaActualiza|null
+     * Obtener nota de venta por folio
      */
     public function obtenerNotaVentaPorFolio(string $folio): ?NotaVtaActualiza
     {
-        return NotaVtaActualiza::folio($folio)->first();
+        return NotaVtaActualiza::where('nv_folio', $folio)->first();
     }
 
     /**
-     *
-     * @param string $notaVenta
-     * @return bool
+     * Verificar si tiene asignación activa
      */
     public function tieneAsignacionActiva(string $notaVenta): bool
     {
-        return Asigna::notaVenta($notaVenta)
+        return Asigna::where('nota_venta', $notaVenta)
             ->whereNotIn('estado', ['completada', 'rechazada'])
             ->exists();
     }
 
     /**
-     *
-     * @param array $datos
-     * @return Asigna
+     * Crear asignación
      */
     public function crearAsignacion(array $datos): Asigna
     {
@@ -178,10 +170,7 @@ class AsignarService
     }
 
     /**
-     *
-     * @param int $id
-     * @param array $datos
-     * @return Asigna
+     * Actualizar asignación
      */
     public function actualizarAsignacion(int $id, array $datos): Asigna
     {
@@ -189,7 +178,7 @@ class AsignarService
             $asignacion = Asigna::findOrFail($id);
 
             if (isset($datos['nota_venta']) && $datos['nota_venta'] !== $asignacion->nota_venta) {
-                $existeAsignacion = Asigna::notaVenta($datos['nota_venta'])
+                $existeAsignacion = Asigna::where('nota_venta', $datos['nota_venta'])
                     ->where('id', '!=', $id)
                     ->whereNotIn('estado', ['completada', 'rechazada'])
                     ->exists();
@@ -226,9 +215,7 @@ class AsignarService
     }
 
     /**
-     *
-     * @param int $id
-     * @return bool
+     * Eliminar asignación
      */
     public function eliminarAsignacion(int $id): bool
     {
@@ -242,10 +229,7 @@ class AsignarService
     }
 
     /**
-     *
-     * @param int $id
-     * @param string $nuevoEstado
-     * @return Asigna
+     * Cambiar estado de asignación
      */
     public function cambiarEstadoAsignacion(int $id, string $nuevoEstado): Asigna
     {
@@ -274,80 +258,84 @@ class AsignarService
     }
 
     /**
-     *
-     * @param int $instaladorId
-     * @param array $filtros
-     * @param int $perPage
-     * @return LengthAwarePaginator
+     * Obtener asignaciones por instalador paginadas
      */
     public function obtenerAsignacionesPorInstaladorPaginadas(int $instaladorId, array $filtros = [], int $perPage = 15): LengthAwarePaginator
     {
-        $query = Asigna::porInstalador($instaladorId)
-            ->with(['instalador1', 'instalador2', 'instalador3', 'instalador4']);
+        $query = Asigna::where(function($q) use ($instaladorId) {
+            $q->where('asignado1', $instaladorId)
+              ->orWhere('asignado2', $instaladorId)
+              ->orWhere('asignado3', $instaladorId)
+              ->orWhere('asignado4', $instaladorId);
+        })->with(['instalador1', 'instalador2', 'instalador3', 'instalador4']);
 
         if (!empty($filtros['estado'])) {
             $query->where('estado', $filtros['estado']);
         }
 
         if (!empty($filtros['fecha_desde']) && !empty($filtros['fecha_hasta'])) {
-            $query->fechaAsignaEntre($filtros['fecha_desde'], $filtros['fecha_hasta']);
+            $query->whereBetween('fecha_asigna', [$filtros['fecha_desde'], $filtros['fecha_hasta']]);
         }
 
         return $query->orderBy('fecha_asigna', 'desc')
             ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+            ->paginate($perPage)
+            ->appends($filtros);
     }
 
     /**
-     *
-     * @param int $instaladorId
-     * @return array
+     * Obtener estadísticas por instalador
      */
     public function obtenerEstadisticasPorInstalador(int $instaladorId): array
     {
-        $query = Asigna::porInstalador($instaladorId);
+        $query = Asigna::where(function($q) use ($instaladorId) {
+            $q->where('asignado1', $instaladorId)
+              ->orWhere('asignado2', $instaladorId)
+              ->orWhere('asignado3', $instaladorId)
+              ->orWhere('asignado4', $instaladorId);
+        });
 
         return [
-            'total' => $query->count(),
-            'pendientes' => (clone $query)->pendientes()->count(),
-            'aceptadas' => (clone $query)->aceptadas()->count(),
-            'en_proceso' => (clone $query)->enProceso()->count(),
-            'completadas' => (clone $query)->completadas()->count(),
+            'total' => (clone $query)->count(),
+            'pendientes' => (clone $query)->where('estado', 'pendiente')->count(),
+            'aceptadas' => (clone $query)->where('estado', 'aceptada')->count(),
+            'en_proceso' => (clone $query)->where('estado', 'en_proceso')->count(),
+            'completadas' => (clone $query)->where('estado', 'completada')->count(),
         ];
     }
 
     /**
-     *
-     * @param int $instaladorId
-     * @return Collection
+     * Obtener asignaciones por instalador
      */
     public function obtenerAsignacionesPorInstalador(int $instaladorId): Collection
     {
-        return Asigna::porInstalador($instaladorId)
-            ->with(['instalador1', 'instalador2', 'instalador3', 'instalador4'])
-            ->orderBy('fecha_asigna', 'desc')
-            ->get();
+        return Asigna::where(function($q) use ($instaladorId) {
+            $q->where('asignado1', $instaladorId)
+              ->orWhere('asignado2', $instaladorId)
+              ->orWhere('asignado3', $instaladorId)
+              ->orWhere('asignado4', $instaladorId);
+        })
+        ->with(['instalador1', 'instalador2', 'instalador3', 'instalador4'])
+        ->orderBy('fecha_asigna', 'desc')
+        ->get();
     }
 
     /**
-     *
-     * @return array
+     * Obtener estadísticas generales
      */
     public function obtenerEstadisticas(): array
     {
         return [
             'total' => Asigna::count(),
-            'pendientes' => Asigna::pendientes()->count(),
-            'aceptadas' => Asigna::aceptadas()->count(),
-            'en_proceso' => Asigna::enProceso()->count(),
-            'completadas' => Asigna::completadas()->count(),
+            'pendientes' => Asigna::where('estado', 'pendiente')->count(),
+            'aceptadas' => Asigna::where('estado', 'aceptada')->count(),
+            'en_proceso' => Asigna::where('estado', 'en_proceso')->count(),
+            'completadas' => Asigna::where('estado', 'completada')->count(),
         ];
     }
 
     /**
-     *
-     * @param int $limit
-     * @return Collection
+     * Obtener notas de venta sin asignación
      */
     public function obtenerNotasVentaSinAsignacion(int $limit = 50): Collection
     {
@@ -359,5 +347,18 @@ class AsignarService
             ->orderBy('nv_femision', 'desc')
             ->limit($limit)
             ->get();
+    }
+
+    /**
+     * Obtener todas las asignaciones (sin paginar)
+     */
+    public function obtenerTodasLasAsignaciones(): Collection
+    {
+        return Asigna::with([
+            'instalador1:id,nombre',
+            'instalador2:id,nombre',
+            'instalador3:id,nombre',
+            'instalador4:id,nombre'
+        ])->get();
     }
 }

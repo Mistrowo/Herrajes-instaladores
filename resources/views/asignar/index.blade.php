@@ -174,10 +174,10 @@
                 </table>
             </div>
             
-            <!-- Paginación -->
+            <!-- Paginación con filtros -->
             @if($notasVenta->hasPages())
             <div class="bg-white px-4 py-3 border-t border-gray-200">
-                {{ $notasVenta->links() }}
+                {{ $notasVenta->appends($filtrosNV)->links() }}
             </div>
             @endif
         </div>
@@ -317,7 +317,13 @@
                         @empty
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center">
-                                <p class="text-gray-500">No hay asignaciones registradas</p>
+                                <div class="flex flex-col items-center justify-center">
+                                    <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                    </svg>
+                                    <p class="text-gray-500 text-lg font-medium">No hay asignaciones registradas</p>
+                                    <p class="text-gray-400 text-sm mt-1">Intenta cambiar los filtros de búsqueda</p>
+                                </div>
                             </td>
                         </tr>
                         @endforelse
@@ -325,9 +331,10 @@
                 </table>
             </div>
             
+            <!-- Paginación con filtros -->
             @if($asignacionesPaginadas->hasPages())
             <div class="bg-white px-4 py-3 border-t border-gray-200">
-                {{ $asignacionesPaginadas->appends(['tab' => 'asignaciones'])->links() }}
+                {{ $asignacionesPaginadas->appends(array_merge($filtros, ['tab' => 'asignaciones']))->links() }}
             </div>
             @endif
         </div>
@@ -428,7 +435,7 @@
     </div>
 </div>
 
-<!-- Modal Editar (mismo de antes) -->
+<!-- Modal Editar -->
 <div id="modalEditar" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center sticky top-0 bg-white">
@@ -533,7 +540,13 @@
         </div>
         
         <div id="contenidoDetalles" class="p-6">
-            <!-- Cargando... -->
+            <div class="text-center py-8">
+                <svg class="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-gray-500">Cargando...</p>
+            </div>
         </div>
     </div>
 </div>
@@ -542,14 +555,12 @@
 <script>
     // Tabs
     function cambiarTab(tab) {
-        // Ocultar todos los contenidos
         document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
         document.querySelectorAll('.tab-button').forEach(el => {
             el.classList.remove('border-blue-500', 'text-blue-600');
             el.classList.add('border-transparent', 'text-gray-500');
         });
         
-        // Mostrar el seleccionado
         document.getElementById('content-' + tab).classList.remove('hidden');
         document.getElementById('tab-' + tab).classList.remove('border-transparent', 'text-gray-500');
         document.getElementById('tab-' + tab).classList.add('border-blue-500', 'text-blue-600');
@@ -592,7 +603,15 @@
     // Modal Ver
     function verAsignacion(id) {
         document.getElementById('modalDetalles').classList.remove('hidden');
-        document.getElementById('contenidoDetalles').innerHTML = '<div class="text-center py-8"><p class="text-gray-500">Cargando...</p></div>';
+        document.getElementById('contenidoDetalles').innerHTML = `
+            <div class="text-center py-8">
+                <svg class="animate-spin h-12 w-12 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-gray-500">Cargando...</p>
+            </div>
+        `;
         
         fetch(`/asignar/${id}`)
             .then(response => response.text())
@@ -600,7 +619,14 @@
                 document.getElementById('contenidoDetalles').innerHTML = html;
             })
             .catch(error => {
-                document.getElementById('contenidoDetalles').innerHTML = '<div class="text-center text-red-600"><p>Error al cargar</p></div>';
+                document.getElementById('contenidoDetalles').innerHTML = `
+                    <div class="text-center text-red-600 py-8">
+                        <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p class="font-medium">Error al cargar los detalles</p>
+                    </div>
+                `;
             });
     }
 

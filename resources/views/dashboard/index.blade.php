@@ -15,7 +15,7 @@
                         :disabled="!notaSeleccionada.folio"
                         :class="notaSeleccionada.folio ? 'bg-white hover:bg-gray-50 hover:border-blue-500 hover:text-blue-700 cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-50'"
                         class="px-3 py-2 border-2 border-gray-300 text-gray-700 font-medium rounded-md transition-all text-sm flex-shrink-0">
-                    📋 PLANO
+                    📋 DOCUMENTOS ASOCIADOS
                 </button>
                 
                 <button @click="abrirOC()"
@@ -281,7 +281,6 @@
 <style>
     [x-cloak] { display: none !important; }
 </style>
-
 @push('scripts')
 <script>
 function dashboardData() {
@@ -308,8 +307,54 @@ function dashboardData() {
         },
 
         init() {
-            // Cargar notas al iniciar
-            this.cargarNotas();
+            // Verificar si hay un folio guardado en sessionStorage
+            const folioGuardado = sessionStorage.getItem('dashboard_folio');
+            
+            if (folioGuardado) {
+                // Cargar automáticamente esa nota
+                this.cargarNotaPorFolio(folioGuardado);
+                // Limpiar el sessionStorage
+                sessionStorage.removeItem('dashboard_folio');
+            } else {
+                // Cargar notas normalmente
+                this.cargarNotas();
+            }
+        },
+
+        /**
+         * Cargar nota específica por folio (NUEVO MÉTODO)
+         */
+        async cargarNotaPorFolio(folio) {
+            this.cargando = true;
+            try {
+                const response = await fetch(`/dashboard/detalles-nv?folio=${folio}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Cargar datos de la nota
+                    this.notaSeleccionada = data.data.nota_venta;
+                    
+                    // Cargar asignación si existe
+                    if (data.data.asignacion) {
+                        this.asignacion = data.data.asignacion;
+                    } else {
+                        this.asignacion = { fecha_asigna: '', observaciones: '' };
+                    }
+                    
+                    showAlert('success', 'Nota de venta cargada exitosamente');
+                } else {
+                    showAlert('warning', 'No se pudo cargar la nota de venta');
+                    // Cargar lista normal si falla
+                    this.cargarNotas();
+                }
+            } catch (error) {
+                showAlert('error', 'Error al cargar la nota de venta');
+                console.error(error);
+                // Cargar lista normal si hay error
+                this.cargarNotas();
+            } finally {
+                this.cargando = false;
+            }
         },
 
         abrirModal() {
@@ -382,36 +427,34 @@ function dashboardData() {
             }
         },
 
+        abrirPlano() {
+            if (!this.notaSeleccionada.folio) return;
+            const url = `dashboard/fft/${this.notaSeleccionada.folio}`;
+            window.open(url, '_blank');
+            showAlert('info', `Abriendo FFT: NV-${this.notaSeleccionada.folio_formateado}`);
+        },
+
+        abrirOC() {
+            if (!this.notaSeleccionada.folio) return;
+            const url = `dashboard/oc/${this.notaSeleccionada.folio}`;
+            window.open(url, '_blank');
+            showAlert('success', `Abriendo OC: NV-${this.notaSeleccionada.folio_formateado}`);
+        },
+
+        abrirHerraje() {
+            if (!this.notaSeleccionada.folio) return;
+            window.location.href = `dashboard/herrajes/${this.notaSeleccionada.folio}`; 
+        },
+
+        abrirChecklist() {
+            if (!this.notaSeleccionada.folio) return;
+            window.location.href = `/dashboard/checklist/${this.notaSeleccionada.folio}`;
+        },
         
-     abrirPlano() {
-    if (!this.notaSeleccionada.folio) return;
-    const url = `dashboard/fft/${this.notaSeleccionada.folio}`;
-    window.open(url, '_blank');
-    showAlert('info', `Abriendo FFT: NV-${this.notaSeleccionada.folio_formateado}`);
-},
-
-abrirOC() {
-    if (!this.notaSeleccionada.folio) return;
-    const url = `dashboard/oc/${this.notaSeleccionada.folio}`;
-    window.open(url, '_blank');
-    showAlert('success', `Abriendo OC: NV-${this.notaSeleccionada.folio_formateado}`);
-},
-
-    abrirHerraje() {
-  if (!this.notaSeleccionada.folio) return;
-  window.location.href = `dashboard/herrajes/${this.notaSeleccionada.folio}`; 
-},
-
-
-       abrirChecklist() {
-    if (!this.notaSeleccionada.folio) return;
-    window.location.href = `/dashboard/checklist/${this.notaSeleccionada.folio}`;
-},
-       abrirEvidencia() {
-    if (!this.notaSeleccionada.folio) return;
-
-    window.location.href = `/dashboard/evidencias/${this.notaSeleccionada.folio}`;
-},
+        abrirEvidencia() {
+            if (!this.notaSeleccionada.folio) return;
+            window.location.href = `/dashboard/evidencias/${this.notaSeleccionada.folio}`;
+        }
     }
 }
 </script>

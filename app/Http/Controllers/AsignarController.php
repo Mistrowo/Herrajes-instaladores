@@ -12,8 +12,6 @@ class AsignarController extends Controller
 {
     protected AsignarService $asignarService;
 
-    /**
-     */
     public function __construct(AsignarService $asignarService)
     {
         $this->asignarService = $asignarService;
@@ -21,57 +19,57 @@ class AsignarController extends Controller
     }
 
     /**
-     *
-     * @param Request $request
-     * @return View
+     * Vista principal con tabs
      */
     public function index(Request $request): View
     {
+        // Filtros para Notas de Venta
         $filtrosNV = [
             'buscar' => $request->input('buscar'),
             'estado_nv' => $request->input('estado_nv'),
         ];
 
+        // Filtros para Asignaciones
         $filtros = [
             'nota_venta' => $request->input('nota_venta'),
             'estado' => $request->input('estado'),
         ];
 
+        // Obtener datos
         $notasVenta = $this->asignarService->obtenerNotasVentaPaginadas($filtrosNV);
-        
         $asignaciones = $this->asignarService->obtenerTodasLasAsignaciones();
-        
         $asignacionesPaginadas = $this->asignarService->obtenerAsignacionesPaginadas($filtros);
-        
         $instaladores = $this->asignarService->obtenerInstaladoresActivos();
 
-        return view('asignar.index', compact('notasVenta', 'asignaciones', 'asignacionesPaginadas', 'instaladores', 'filtrosNV', 'filtros'));
+        return view('asignar.index', compact(
+            'notasVenta', 
+            'asignaciones', 
+            'asignacionesPaginadas', 
+            'instaladores', 
+            'filtrosNV', 
+            'filtros'
+        ));
     }
 
     /**
-     *
-     * @param Request $request
-     * @return View
+     * Formulario de creación
      */
     public function create(Request $request): View
     {
         $filtrosNV = [
             'folio' => $request->input('folio'),
             'cliente' => $request->input('cliente'),
-            'estado' => $request->input('estado'),
+            'estado_nv' => $request->input('estado_nv'),
         ];
 
         $notasVenta = $this->asignarService->obtenerNotasVentaPaginadas($filtrosNV);
-        
         $instaladores = $this->asignarService->obtenerInstaladoresActivos();
         
         return view('asignar.create', compact('notasVenta', 'instaladores', 'filtrosNV'));
     }
 
     /**
-     *
-     * @param AsignarRequest $request
-     * @return RedirectResponse
+     * Guardar asignación
      */
     public function store(AsignarRequest $request): RedirectResponse
     {
@@ -89,9 +87,18 @@ class AsignarController extends Controller
     }
 
     /**
-     *
-     * @param int $id
-     * @return View
+     * Mostrar detalles de asignación
+     */
+    public function show(int $id): View
+    {
+        $asignacion = $this->asignarService->obtenerAsignacionPorId($id);
+        $notaVenta = $this->asignarService->obtenerNotaVentaPorFolio($asignacion->nota_venta);
+        
+        return view('asignar.show', compact('asignacion', 'notaVenta'));
+    }
+
+    /**
+     * Formulario de edición
      */
     public function edit(int $id): View
     {
@@ -102,10 +109,7 @@ class AsignarController extends Controller
     }
 
     /**
-     *
-     * @param AsignarRequest $request
-     * @param int $id
-     * @return RedirectResponse
+     * Actualizar asignación
      */
     public function update(AsignarRequest $request, int $id): RedirectResponse
     {
@@ -123,9 +127,7 @@ class AsignarController extends Controller
     }
 
     /**
-     *
-     * @param int $id
-     * @return RedirectResponse
+     * Eliminar asignación
      */
     public function destroy(int $id): RedirectResponse
     {
@@ -142,10 +144,7 @@ class AsignarController extends Controller
     }
 
     /**
-     *
-     * @param int $id
-     * @param string $estado
-     * @return RedirectResponse
+     * Cambiar estado de asignación
      */
     public function cambiarEstado(int $id, string $estado): RedirectResponse
     {
@@ -162,23 +161,7 @@ class AsignarController extends Controller
     }
 
     /**
-     *
-     * @param int $id
-     * @return View
-     */
-    public function show(int $id): View
-    {
-        $asignacion = $this->asignarService->obtenerAsignacionPorId($id);
-        
-        $notaVenta = $this->asignarService->obtenerNotaVentaPorFolio($asignacion->nota_venta);
-        
-        return view('asignar.show', compact('asignacion', 'notaVenta'));
-    }
-
-    /**
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * Buscar notas de venta (AJAX)
      */
     public function buscarNotasVenta(Request $request)
     {
@@ -204,9 +187,7 @@ class AsignarController extends Controller
     }
 
     /**
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * Verificar asignación (AJAX)
      */
     public function verificarAsignacion(Request $request)
     {
