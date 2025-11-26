@@ -45,7 +45,7 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Descripción (opcional)</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Descripción de la imagen (opcional)</label>
                 <textarea name="descripcion" rows="3" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Ej: Foto de instalación final en living..."></textarea>
             </div>
 
@@ -81,15 +81,22 @@
                             @endif
                         </div>
 
-                        <form action="{{ route('evidencias.destroy', $evidencia->id) }}" method="POST" class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" onclick="return confirm('¿Eliminar esta evidencia?')" class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </form>
+                        <form id="delete-form-{{ $evidencia->id }}" 
+      action="{{ route('evidencias.destroy', $evidencia->id) }}" 
+      method="POST" 
+      class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
+    @csrf
+    @method('DELETE')
+    
+    <button type="button" 
+            onclick="confirmarEliminacion({{ $evidencia->id }})"
+            class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+        </svg>
+    </button>
+</form>
                     </div>
                 @endforeach
             </div>
@@ -98,6 +105,24 @@
 </div>
 
 <script>
+
+    function confirmarEliminacion(evidenciaId) {
+        Swal.fire({
+            title: '¿Eliminar evidencia?',
+            text: "Esta acción no se puede deshacer",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-form-' + evidenciaId).submit();
+            }
+        });
+    }
     function volverDashboard() {
     const folio = '{{ $asignacion->nota_venta }}';
     sessionStorage.setItem('dashboard_folio', folio);

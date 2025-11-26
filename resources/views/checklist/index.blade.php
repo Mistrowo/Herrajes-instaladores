@@ -13,12 +13,12 @@
         {{-- Botón Volver al Dashboard --}}
         <div class="mb-6">
             <button onclick="volverDashboard()"
-            class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-        </svg>
-        Volver
-    </button>
+                class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Volver
+            </button>
         </div>
 
         {{-- Alertas --}}
@@ -61,27 +61,56 @@
             {{-- SECCIÓN 1: NÚMERO PROYECTO/PEDIDO --}}
             <x-accordion-item title="📋 NÚMERO PROYECTO/PEDIDO" id="proyecto-pedido">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <x-si-no-item 
-                        label="Rectificación Medidas" 
-                        name="rectificacion_medidas" 
-                        :value="old('rectificacion_medidas', $checklist?->rectificacion_medidas)"
-                    />
-                    <x-si-no-item 
-                        label="Planos Actualizados" 
-                        name="planos_actualizados" 
-                        :value="old('planos_actualizados', $checklist?->planos_actualizados)"
-                    />
-                    <x-si-no-item 
-                        label="Planos Muebles Especiales" 
-                        name="planos_muebles_especiales" 
-                        :value="old('planos_muebles_especiales', $checklist?->planos_muebles_especiales)"
-                    />
-                    <x-si-no-item 
-                        label="Modificaciones Realizadas" 
-                        name="modificaciones_realizadas" 
-                        :value="old('modificaciones_realizadas', $checklist?->modificaciones_realizadas)"
-                    />
-                    <div class="md:col-span-2">
+                    {{-- Rectificación Medidas --}}
+                    <div class="space-y-2">
+                        <x-si-no-item 
+                            label="Rectificación Medidas" 
+                            name="rectificacion_medidas" 
+                            :value="old('rectificacion_medidas', $checklist?->rectificacion_medidas)"
+                        />
+                        <textarea name="rectificacion_medidas_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones rectificación medidas...">{{ old('rectificacion_medidas_obs', $checklist?->rectificacion_medidas_obs) }}</textarea>
+                    </div>
+
+                    {{-- Planos Actualizados --}}
+                    <div class="space-y-2">
+                        <x-si-no-item 
+                            label="Planos Actualizados" 
+                            name="planos_actualizados" 
+                            :value="old('planos_actualizados', $checklist?->planos_actualizados)"
+                        />
+                        <textarea name="planos_actualizados_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones planos actualizados...">{{ old('planos_actualizados_obs', $checklist?->planos_actualizados_obs) }}</textarea>
+                    </div>
+
+                    {{-- Planos Muebles Especiales --}}
+                    <div class="space-y-2">
+                        <x-si-no-item 
+                            label="Planos Muebles Especiales" 
+                            name="planos_muebles_especiales" 
+                            :value="old('planos_muebles_especiales', $checklist?->planos_muebles_especiales)"
+                        />
+                        <textarea name="planos_muebles_especiales_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones planos muebles especiales...">{{ old('planos_muebles_especiales_obs', $checklist?->planos_muebles_especiales_obs) }}</textarea>
+                    </div>
+
+                    {{-- Modificaciones Realizadas --}}
+                    <div class="space-y-2">
+                        <x-si-no-item 
+                            label="Modificaciones Realizadas" 
+                            name="modificaciones_realizadas" 
+                            :value="old('modificaciones_realizadas', $checklist?->modificaciones_realizadas)"
+                        />
+                        <textarea name="modificaciones_realizadas_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones modificaciones realizadas...">{{ old('modificaciones_realizadas_obs', $checklist?->modificaciones_realizadas_obs) }}</textarea>
+                    </div>
+
+                    {{-- Modificaciones Autorizadas por --}}
+                    <div class="md:col-span-2 space-y-2">
                         <label class="block font-semibold text-gray-700 mb-2 flex items-center gap-2">
                             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -92,13 +121,26 @@
                                value="{{ old('mod_autorizadas_por', $checklist?->mod_autorizadas_por) }}" 
                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm"
                                placeholder="Nombre de quien autorizó">
+
+                        <textarea name="mod_autorizadas_por_obs" rows="2"
+                            class="w-full mt-2 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones sobre la autorización...">{{ old('mod_autorizadas_por_obs', $checklist?->mod_autorizadas_por_obs) }}</textarea>
                     </div>
-                    <x-si-no-item 
-                        label="Despacho Integral" 
-                        name="despacho_integral" 
-                        :value="old('despacho_integral', $checklist?->despacho_integral)"
-                    />
-                    <div>
+
+                    {{-- Despacho Integral --}}
+                    <div class="space-y-2">
+                        <x-si-no-item 
+                            label="Despacho Integral" 
+                            name="despacho_integral" 
+                            :value="old('despacho_integral', $checklist?->despacho_integral)"
+                        />
+                        <textarea name="despacho_integral_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones despacho integral...">{{ old('despacho_integral_obs', $checklist?->despacho_integral_obs) }}</textarea>
+                    </div>
+
+                    {{-- Teléfono --}}
+                    <div class="space-y-2">
                         <label class="block font-semibold text-gray-700 mb-2 flex items-center gap-2">
                             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
@@ -109,6 +151,10 @@
                                value="{{ old('telefono', $checklist?->telefono) }}" 
                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm" 
                                placeholder="+56 9 1234 5678">
+
+                        <textarea name="telefono_obs" rows="2"
+                            class="w-full mt-2 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones teléfono...">{{ old('telefono_obs', $checklist?->telefono_obs) }}</textarea>
                     </div>
                 </div>
             </x-accordion-item>
@@ -119,23 +165,71 @@
                 :badge-count="($checklist)?->countErrors() ?? 0">
                 <div class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <x-si-no-item label="Ventas" name="errores_ventas" 
-                            :value="old('errores_ventas', $checklist?->errores_ventas)" />
-                        <x-si-no-item label="Diseño" name="errores_diseno" 
-                            :value="old('errores_diseno', $checklist?->errores_diseno)" />
-                        <x-si-no-item label="Rectificación" name="errores_rectificacion" 
-                            :value="old('errores_rectificacion', $checklist?->errores_rectificacion)" />
-                        <x-si-no-item label="Producción" name="errores_produccion" 
-                            :value="old('errores_produccion', $checklist?->errores_produccion)" />
-                        <x-si-no-item label="Proveedor" name="errores_proveedor" 
-                            :value="old('errores_proveedor', $checklist?->errores_proveedor)" />
-                        <x-si-no-item label="Despacho" name="errores_despacho" 
-                            :value="old('errores_despacho', $checklist?->errores_despacho)" />
-                        <x-si-no-item label="Instalación" name="errores_instalacion" 
-                            :value="old('errores_instalacion', $checklist?->errores_instalacion)" />
-                        <x-si-no-item label="Otro" name="errores_otro" 
-                            :value="old('errores_otro', $checklist?->errores_otro)" />
+                        <div class="space-y-2">
+                            <x-si-no-item label="Ventas" name="errores_ventas" 
+                                :value="old('errores_ventas', $checklist?->errores_ventas)" />
+                            <textarea name="errores_ventas_obs" rows="2"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                                placeholder="Detalle del error de ventas...">{{ old('errores_ventas_obs', $checklist?->errores_ventas_obs) }}</textarea>
+                        </div>
+
+                        <div class="space-y-2">
+                            <x-si-no-item label="Diseño" name="errores_diseno" 
+                                :value="old('errores_diseno', $checklist?->errores_diseno)" />
+                            <textarea name="errores_diseno_obs" rows="2"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                                placeholder="Detalle del error de diseño...">{{ old('errores_diseno_obs', $checklist?->errores_diseno_obs) }}</textarea>
+                        </div>
+
+                        <div class="space-y-2">
+                            <x-si-no-item label="Rectificación" name="errores_rectificacion" 
+                                :value="old('errores_rectificacion', $checklist?->errores_rectificacion)" />
+                            <textarea name="errores_rectificacion_obs" rows="2"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                                placeholder="Detalle del error de rectificación...">{{ old('errores_rectificacion_obs', $checklist?->errores_rectificacion_obs) }}</textarea>
+                        </div>
+
+                        <div class="space-y-2">
+                            <x-si-no-item label="Producción" name="errores_produccion" 
+                                :value="old('errores_produccion', $checklist?->errores_produccion)" />
+                            <textarea name="errores_produccion_obs" rows="2"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                                placeholder="Detalle del error de producción...">{{ old('errores_produccion_obs', $checklist?->errores_produccion_obs) }}</textarea>
+                        </div>
+
+                        <div class="space-y-2">
+                            <x-si-no-item label="Proveedor" name="errores_proveedor" 
+                                :value="old('errores_proveedor', $checklist?->errores_proveedor)" />
+                            <textarea name="errores_proveedor_obs" rows="2"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                                placeholder="Detalle del error de proveedor...">{{ old('errores_proveedor_obs', $checklist?->errores_proveedor_obs) }}</textarea>
+                        </div>
+
+                        <div class="space-y-2">
+                            <x-si-no-item label="Despacho" name="errores_despacho" 
+                                :value="old('errores_despacho', $checklist?->errores_despacho)" />
+                            <textarea name="errores_despacho_obs" rows="2"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                                placeholder="Detalle del error de despacho...">{{ old('errores_despacho_obs', $checklist?->errores_despacho_obs) }}</textarea>
+                        </div>
+
+                        <div class="space-y-2">
+                            <x-si-no-item label="Instalación" name="errores_instalacion" 
+                                :value="old('errores_instalacion', $checklist?->errores_instalacion)" />
+                            <textarea name="errores_instalacion_obs" rows="2"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                                placeholder="Detalle del error de instalación...">{{ old('errores_instalacion_obs', $checklist?->errores_instalacion_obs) }}</textarea>
+                        </div>
+
+                        <div class="space-y-2">
+                            <x-si-no-item label="Otro" name="errores_otro" 
+                                :value="old('errores_otro', $checklist?->errores_otro)" />
+                            <textarea name="errores_otro_obs" rows="2"
+                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                                placeholder="Detalle de otros errores...">{{ old('errores_otro_obs', $checklist?->errores_otro_obs) }}</textarea>
+                        </div>
                     </div>
+
                     <div>
                         <label class="block font-semibold text-gray-700 mb-2 flex items-center gap-2">
                             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -153,50 +247,162 @@
             {{-- SECCIÓN 3: ESTADO OBRA --}}
             <x-accordion-item title="🏗️ ESTADO OBRA AL MOMENTO DE LA INSTALACIÓN" id="estado-obra">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <x-si-no-item label="Instalación de Cielo" name="instalacion_cielo" 
-                        :value="old('instalacion_cielo', $checklist?->instalacion_cielo)" />
-                    <x-si-no-item label="Instalación de Piso" name="instalacion_piso" 
-                        :value="old('instalacion_piso', $checklist?->instalacion_piso)" />
-                    <x-si-no-item label="Remate Muros" name="remate_muros" 
-                        :value="old('remate_muros', $checklist?->remate_muros)" />
-                    <x-si-no-item label="Nivelación Piso" name="nivelacion_piso" 
-                        :value="old('nivelacion_piso', $checklist?->nivelacion_piso)" />
-                    <x-si-no-item label="Muros a Plomo" name="muros_plomo" 
-                        :value="old('muros_plomo', $checklist?->muros_plomo)" />
-                    <x-si-no-item label="Instalación Eléctrica" name="instalacion_electrica" 
-                        :value="old('instalacion_electrica', $checklist?->instalacion_electrica)" />
-                    <x-si-no-item label="Instalación Voz y Dato" name="instalacion_voz_dato" 
-                        :value="old('instalacion_voz_dato', $checklist?->instalacion_voz_dato)" />
+                    <div class="space-y-2">
+                        <x-si-no-item label="Instalación de Cielo" name="instalacion_cielo" 
+                            :value="old('instalacion_cielo', $checklist?->instalacion_cielo)" />
+                        <textarea name="instalacion_cielo_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones instalación cielo...">{{ old('instalacion_cielo_obs', $checklist?->instalacion_cielo_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Instalación de Piso" name="instalacion_piso" 
+                            :value="old('instalacion_piso', $checklist?->instalacion_piso)" />
+                        <textarea name="instalacion_piso_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones instalación piso...">{{ old('instalacion_piso_obs', $checklist?->instalacion_piso_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Remate Muros" name="remate_muros" 
+                            :value="old('remate_muros', $checklist?->remate_muros)" />
+                        <textarea name="remate_muros_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones remate muros...">{{ old('remate_muros_obs', $checklist?->remate_muros_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Nivelación Piso" name="nivelacion_piso" 
+                            :value="old('nivelacion_piso', $checklist?->nivelacion_piso)" />
+                        <textarea name="nivelacion_piso_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones nivelación piso...">{{ old('nivelacion_piso_obs', $checklist?->nivelacion_piso_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Muros a Plomo" name="muros_plomo" 
+                            :value="old('muros_plomo', $checklist?->muros_plomo)" />
+                        <textarea name="muros_plomo_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones muros a plomo...">{{ old('muros_plomo_obs', $checklist?->muros_plomo_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Instalación Eléctrica" name="instalacion_electrica" 
+                            :value="old('instalacion_electrica', $checklist?->instalacion_electrica)" />
+                        <textarea name="instalacion_electrica_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones instalación eléctrica...">{{ old('instalacion_electrica_obs', $checklist?->instalacion_electrica_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Instalación Voz y Dato" name="instalacion_voz_dato" 
+                            :value="old('instalacion_voz_dato', $checklist?->instalacion_voz_dato)" />
+                        <textarea name="instalacion_voz_dato_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones instalación voz y datos...">{{ old('instalacion_voz_dato_obs', $checklist?->instalacion_voz_dato_obs) }}</textarea>
+                    </div>
                 </div>
             </x-accordion-item>
 
             {{-- SECCIÓN 4: INSPECCIÓN FINAL --}}
             <x-accordion-item title="✅ INSPECCIÓN FINAL" id="inspeccion-final">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <x-si-no-item label="Paneles Alineados" name="paneles_alineados" 
-                        :value="old('paneles_alineados', $checklist?->paneles_alineados)" />
-                    <x-si-no-item label="Nivelación Cubiertas" name="nivelacion_cubiertas" 
-                        :value="old('nivelacion_cubiertas', $checklist?->nivelacion_cubiertas)" />
-                    <x-si-no-item label="Pasacables Instalados" name="pasacables_instalados" 
-                        :value="old('pasacables_instalados', $checklist?->pasacables_instalados)" />
-                    <x-si-no-item label="Limpieza Cubiertas" name="limpieza_cubiertas" 
-                        :value="old('limpieza_cubiertas', $checklist?->limpieza_cubiertas)" />
-                    <x-si-no-item label="Limpieza Cajones" name="limpieza_cajones" 
-                        :value="old('limpieza_cajones', $checklist?->limpieza_cajones)" />
-                    <x-si-no-item label="Limpieza Piso" name="limpieza_piso" 
-                        :value="old('limpieza_piso', $checklist?->limpieza_piso)" />
-                    <x-si-no-item label="Llaves Instaladas" name="llaves_instaladas" 
-                        :value="old('llaves_instaladas', $checklist?->llaves_instaladas)" />
-                    <x-si-no-item label="Funcionamiento Mueble" name="funcionamiento_mueble" 
-                        :value="old('funcionamiento_mueble', $checklist?->funcionamiento_mueble)" />
-                    <x-si-no-item label="Puntos Eléctricos" name="puntos_electricos" 
-                        :value="old('puntos_electricos', $checklist?->puntos_electricos)" />
-                    <x-si-no-item label="Sillas Ubicadas" name="sillas_ubicadas" 
-                        :value="old('sillas_ubicadas', $checklist?->sillas_ubicadas)" />
-                    <x-si-no-item label="Accesorios" name="accesorios" 
-                        :value="old('accesorios', $checklist?->accesorios)" />
-                    <x-si-no-item label="Check Herramientas" name="check_herramientas" 
-                        :value="old('check_herramientas', $checklist?->check_herramientas)" />
+                    <div class="space-y-2">
+                        <x-si-no-item label="Paneles Alineados" name="paneles_alineados" 
+                            :value="old('paneles_alineados', $checklist?->paneles_alineados)" />
+                        <textarea name="paneles_alineados_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones paneles alineados...">{{ old('paneles_alineados_obs', $checklist?->paneles_alineados_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Nivelación Cubiertas" name="nivelacion_cubiertas" 
+                            :value="old('nivelacion_cubiertas', $checklist?->nivelacion_cubiertas)" />
+                        <textarea name="nivelacion_cubiertas_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones nivelación cubiertas...">{{ old('nivelacion_cubiertas_obs', $checklist?->nivelacion_cubiertas_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Pasacables Instalados" name="pasacables_instalados" 
+                            :value="old('pasacables_instalados', $checklist?->pasacables_instalados)" />
+                        <textarea name="pasacables_instalados_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones pasacables...">{{ old('pasacables_instalados_obs', $checklist?->pasacables_instalados_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Limpieza Cubiertas" name="limpieza_cubiertas" 
+                            :value="old('limpieza_cubiertas', $checklist?->limpieza_cubiertas)" />
+                        <textarea name="limpieza_cubiertas_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones limpieza cubiertas...">{{ old('limpieza_cubiertas_obs', $checklist?->limpieza_cubiertas_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Limpieza Cajones" name="limpieza_cajones" 
+                            :value="old('limpieza_cajones', $checklist?->limpieza_cajones)" />
+                        <textarea name="limpieza_cajones_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones limpieza cajones...">{{ old('limpieza_cajones_obs', $checklist?->limpieza_cajones_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Limpieza Piso" name="limpieza_piso" 
+                            :value="old('limpieza_piso', $checklist?->limpieza_piso)" />
+                        <textarea name="limpieza_piso_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus-border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones limpieza piso...">{{ old('limpieza_piso_obs', $checklist?->limpieza_piso_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Llaves Instaladas" name="llaves_instaladas" 
+                            :value="old('llaves_instaladas', $checklist?->llaves_instaladas)" />
+                        <textarea name="llaves_instaladas_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones llaves instaladas...">{{ old('llaves_instaladas_obs', $checklist?->llaves_instaladas_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Funcionamiento Mueble" name="funcionamiento_mueble" 
+                            :value="old('funcionamiento_mueble', $checklist?->funcionamiento_mueble)" />
+                        <textarea name="funcionamiento_mueble_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones funcionamiento mueble...">{{ old('funcionamiento_mueble_obs', $checklist?->funcionamiento_mueble_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Puntos Eléctricos" name="puntos_electricos" 
+                            :value="old('puntos_electricos', $checklist?->puntos_electricos)" />
+                        <textarea name="puntos_electricos_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones puntos eléctricos...">{{ old('puntos_electricos_obs', $checklist?->puntos_electricos_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Sillas Ubicadas" name="sillas_ubicadas" 
+                            :value="old('sillas_ubicadas', $checklist?->sillas_ubicadas)" />
+                        <textarea name="sillas_ubicadas_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones sillas ubicadas...">{{ old('sillas_ubicadas_obs', $checklist?->sillas_ubicadas_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Accesorios" name="accesorios" 
+                            :value="old('accesorios', $checklist?->accesorios)" />
+                        <textarea name="accesorios_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones accesorios...">{{ old('accesorios_obs', $checklist?->accesorios_obs) }}</textarea>
+                    </div>
+
+                    <div class="space-y-2">
+                        <x-si-no-item label="Check Herramientas" name="check_herramientas" 
+                            :value="old('check_herramientas', $checklist?->check_herramientas)" />
+                        <textarea name="check_herramientas_obs" rows="2"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition shadow-sm resize-none"
+                            placeholder="Observaciones check herramientas...">{{ old('check_herramientas_obs', $checklist?->check_herramientas_obs) }}</textarea>
+                    </div>
                 </div>
             </x-accordion-item>
 

@@ -27,21 +27,17 @@ class DashboardController extends Controller
         /** @var \App\Models\Instalador $user */
         $user = auth()->user();
         
-        // Si es admin, obtener todas las notas de venta
-        // Si es instalador, solo las asignadas a él
+       
         if ($user->esAdmin()) {
             $notasVenta = NotaVtaActualiza::orderBy('nv_femision', 'desc')
                 ->paginate(10);
         } else {
-            // Obtener solo mis asignaciones aceptadas o en proceso
             $asignaciones = Asigna::porInstalador($user->id)
                 ->whereIn('estado', ['aceptada', 'en_proceso'])
                 ->get();
             
-            // Obtener los folios
             $folios = $asignaciones->pluck('nota_venta')->unique()->toArray();
             
-            // Obtener las notas de venta correspondientes
             $notasVenta = NotaVtaActualiza::whereIn('nv_folio', $folios)
                 ->orderBy('nv_femision', 'desc')
                 ->paginate(10);

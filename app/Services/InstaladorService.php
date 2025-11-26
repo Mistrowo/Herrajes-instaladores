@@ -3,74 +3,102 @@
 namespace App\Services;
 
 use App\Models\Instalador;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Hash;
 
 class InstaladorService
 {
-    public function list(?string $q = null, int $perPage = 10, bool $withTrashed = false): LengthAwarePaginator
+    /**
+     * Listar instaladores con filtros y paginación
+     */
+    public function list(string $q = '', int $perPage = 10, bool $withTrashed = false): LengthAwarePaginator
     {
         $query = Instalador::query();
 
+        // Si se solicita ver eliminados
         if ($withTrashed) {
             $query->withTrashed();
         }
 
-        if ($q) {
-            $qLike = "%{$q}%";
-            $query->where(function ($sub) use ($qLike) {
-                $sub->where('nombre', 'like', $qLike)
-                    ->orWhere('usuario', 'like', $qLike)
-                    ->orWhere('correo', 'like', $qLike)
-                    ->orWhere('rut', 'like', $qLike)
-                    ->orWhere('telefono', 'like', $qLike);
+        // Filtro de búsqueda
+        if (!empty($q)) {
+            $query->where(function ($query) use ($q) {
+                $query->where('nombre', 'like', "%{$q}%")
+                      ->orWhere('usuario', 'like', "%{$q}%")
+                      ->orWhere('correo', 'like', "%{$q}%")
+                      ->orWhere('rut', 'like', "%{$q}%")
+                      ->orWhere('telefono', 'like', "%{$q}%");
             });
         }
 
-        return $query->orderBy('nombre')
-            ->paginate($perPage)
-            ->withQueryString();
+        // Ordenar por nombre
+        $query->orderBy('nombre', 'asc');
+
+        // Paginar y mantener los filtros en la URL
+        return $query->paginate($perPage)->appends([
+            'q' => $q,
+            'per_page' => $perPage,
+            'withTrashed' => $withTrashed ? 1 : 0
+        ]);
     }
 
+    /**
+     * Crear instalador
+     */
     public function create(array $data): Instalador
     {
-        return DB::transaction(function () use ($data) {
-            if (!isset($data['activo'])) $data['activo'] = 'S';
-            return Instalador::create($data);
-        });
+        $data['password'] = Hash::make($data['password']);
+        return Instalador::create($data);
     }
 
-    public function update(Instalador $instalador, array $data): Instalador
+    /**
+     * Actualizar instalador
+     */
+    public function update(Instalador $instalador, array $data): bool
     {
-        return DB::transaction(function () use ($instalador, $data) {
-            if (empty($data['password'])) unset($data['password']); 
-            $instalador->update($data);
-            return $instalador;
-        });
+        // Si se proporciona una nueva contraseña, hashearla
+        if (!empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            // Si no se proporciona, no actualizar el campo
+            unset($data['password']);
+        }
+
+        return $instalador->update($data);
     }
 
-    public function delete(Instalador $instalador): void
+    /**
+     * Eliminar instalador (soft delete)
+     */
+    public function delete(Instalador $instalador): bool
     {
-        $instalador->delete();
+        return $instalador->delete();
     }
 
-    public function restore(int $id): Instalador
-    {
-        $inst = Instalador::withTrashed()->findOrFail($id);
-        $inst->restore();
-        return $inst;
-    }
-
-    public function forceDelete(int $id): void
-    {
-        $inst = Instalador::withTrashed()->findOrFail($id);
-        $inst->forceDelete();
-    }
-
-    public function toggleActivo(Instalador $instalador): Instalador
+    /**
+     * Cambiar estado activo/inactivo
+     */
+    public function toggleActivo(Instalador $instalador): bool
     {
         $instalador->activo = $instalador->activo === 'S' ? 'N' : 'S';
-        $instalador->save();
-        return $instalador;
+        return $instalador->save();
+    }
+
+    /**
+     * Restaurar instalador eliminado
+     */
+    public function restore(int $id): bool
+    {
+        $instalador = Instalador::withTrashed()->findOrFail($id);
+        return $instalador->restore();
+    }
+
+    /**
+     * Eliminar permanentemente
+     */
+    public function forceDelete(int $id): bool
+    {
+        $instalador = Instalador::withTrashed()->findOrFail($id);
+        return $instalador->forceDelete();
     }
 }

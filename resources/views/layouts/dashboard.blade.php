@@ -4,12 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') - Sistema Ilesa</title>
+    <title>@yield('title', 'Dashboard') - Sistema Ohffice</title>
     
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Alpine.js CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <!-- SweetAlert2 -->
@@ -31,6 +29,20 @@
     </script>
     
     <style>
+         /* Ocultar elementos mientras Alpine.js se carga */
+    [x-cloak] { 
+        display: none !important; 
+    }
+    
+    /* Opcional: Mostrar un skeleton/loader mientras carga */
+    .alpine-loading {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+    
+    .alpine-loaded {
+        opacity: 1;
+    }
         /* Scroll personalizado */
         ::-webkit-scrollbar {
             width: 8px;

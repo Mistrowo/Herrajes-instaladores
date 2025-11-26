@@ -2,9 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ChecklistController;
 use App\Models\Ventas\Fasecomercialproyecto;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -33,35 +32,28 @@ Route::middleware('guest')->group(function () {
 */
 Route::middleware(['auth'])->group(function () {
 
-    // Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     
-    // Búsqueda y detalles de notas (AJAX)
-    Route::get('/dashboard/buscar-notas', [DashboardController::class, 'buscarNotasVenta'])->name('dashboard.buscar-notas');
-    Route::get('/dashboard/detalles-nv', [DashboardController::class, 'obtenerDetallesNV'])->name('dashboard.detalles-nv');
+    Route::get('/dashboard/buscar-notas', [App\Http\Controllers\DashboardController::class, 'buscarNotasVenta'])->name('dashboard.buscar-notas');
+    Route::get('/dashboard/detalles-nv', [App\Http\Controllers\DashboardController::class, 'obtenerDetallesNV'])->name('dashboard.detalles-nv');
 
-    // Descargar OC
-    Route::get('/dashboard/descargar-oc/{folio}', function ($folio) {
-        $fase = Fasecomercialproyecto::where('folio_nv', $folio)->first();
-
-        if (!$fase || !$fase->oc_proveedores()) {
-            abort(404, 'OC no encontrada');
-        }
-
-        $media = $fase->oc_proveedores();
-        $url = "https://clientes.ohffice.cl/storage/{$media->id}/{$media->file_name}";
-
-        return redirect()->away($url);
-    })->name('dashboard.descargar-oc');
-
-    // ⭐ Checklist - NUEVAS RUTAS
-    Route::prefix('dashboard/checklist')->group(function () {
-        Route::get('/{folio}', [ChecklistController::class, 'index'])->name('checklist.index');
-        Route::post('/{folio}', [ChecklistController::class, 'store'])->name('checklist.store');
-        Route::get('/{folio}/pdf', [ChecklistController::class, 'pdf'])->name('checklist.pdf');
-    });
-
-    // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout.get');
+
+
+Route::get('/dashboard/descargar-oc/{folio}', function ($folio) {
+    $fase = Fasecomercialproyecto::where('folio_nv', $folio)->first();
+
+    if (!$fase || !$fase->oc_proveedores()) {
+        abort(404, 'OC no encontrada');
+    }
+
+    $media = $fase->oc_proveedores();
+    $url = "https://clientes.ohffice.cl/storage/{$media->id}/{$media->file_name}";
+
+    return redirect()->away($url);
+})->name('dashboard.descargar-oc');
+ 
+
+   
 });

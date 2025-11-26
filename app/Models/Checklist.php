@@ -25,46 +25,80 @@ class Checklist extends Model
         
         // Sección 1: Proyecto/Pedido
         'rectificacion_medidas',
+        'rectificacion_medidas_obs',
         'planos_actualizados',
+        'planos_actualizados_obs',
         'planos_muebles_especiales',
+        'planos_muebles_especiales_obs',
         'modificaciones_realizadas',
+        'modificaciones_realizadas_obs',
         'mod_autorizadas_por',
+        'mod_autorizadas_por_obs',
         'despacho_integral',
+        'despacho_integral_obs',
         'telefono',
+        'telefono_obs',
         
         // Sección 2: Errores
         'errores_ventas',
+        'errores_ventas_obs',
         'errores_diseno',
+        'errores_diseno_obs',
         'errores_rectificacion',
+        'errores_rectificacion_obs',
         'errores_produccion',
+        'errores_produccion_obs',
         'errores_proveedor',
+        'errores_proveedor_obs',
         'errores_despacho',
+        'errores_despacho_obs',
         'errores_instalacion',
+        'errores_instalacion_obs',
         'errores_otro',
+        'errores_otro_obs',
         'observaciones',
         
         // Sección 3: Estado Obra
         'instalacion_cielo',
+        'instalacion_cielo_obs',
         'instalacion_piso',
+        'instalacion_piso_obs',
         'remate_muros',
+        'remate_muros_obs',
         'nivelacion_piso',
+        'nivelacion_piso_obs',
         'muros_plomo',
+        'muros_plomo_obs',
         'instalacion_electrica',
+        'instalacion_electrica_obs',
         'instalacion_voz_dato',
+        'instalacion_voz_dato_obs',
         
         // Sección 4: Inspección Final
         'paneles_alineados',
+        'paneles_alineados_obs',
         'nivelacion_cubiertas',
+        'nivelacion_cubiertas_obs',
         'pasacables_instalados',
+        'pasacables_instalados_obs',
         'limpieza_cubiertas',
+        'limpieza_cubiertas_obs',
         'limpieza_cajones',
+        'limpieza_cajones_obs',
         'limpieza_piso',
+        'limpieza_piso_obs',
         'llaves_instaladas',
+        'llaves_instaladas_obs',
         'funcionamiento_mueble',
+        'funcionamiento_mueble_obs',
         'puntos_electricos',
+        'puntos_electricos_obs',
         'sillas_ubicadas',
+        'sillas_ubicadas_obs',
         'accesorios',
+        'accesorios_obs',
         'check_herramientas',
+        'check_herramientas_obs',
         
         'fecha_completado',
     ];
@@ -241,20 +275,20 @@ class Checklist extends Model
         if (!$this->fecha_completado) {
             return [
                 'text' => 'En progreso',
-                'color' => 'yellow'
+                'color' => 'yellow',
             ];
         }
 
         if ($this->hasAnyErrors()) {
             return [
                 'text' => 'Con errores',
-                'color' => 'red'
+                'color' => 'red',
             ];
         }
 
         return [
             'text' => 'Completado',
-            'color' => 'green'
+            'color' => 'green',
         ];
     }
 }

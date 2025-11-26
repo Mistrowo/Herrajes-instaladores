@@ -37,6 +37,20 @@
     
     <!-- Estilos Personalizados -->
     <style>
+         /* Ocultar elementos mientras Alpine.js se carga */
+    [x-cloak] { 
+        display: none !important; 
+    }
+    
+    /* Opcional: Mostrar un skeleton/loader mientras carga */
+    .alpine-loading {
+        opacity: 0;
+        transition: opacity 0.3s ease-in-out;
+    }
+    
+    .alpine-loaded {
+        opacity: 1;
+    }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }

@@ -9,7 +9,7 @@
     {{-- Toolbar --}}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6">
         <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-            <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-3 w-full md:max-w-3xl">
+            <form method="GET" action="{{ route('administracion.instaladores.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-3 w-full md:max-w-3xl">
                 <div class="md:col-span-2">
                     <label class="block text-xs uppercase font-semibold text-gray-500 mb-1">Buscar</label>
                     <input type="text" name="q" value="{{ $q }}"
@@ -24,22 +24,57 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="flex items-end gap-3">
-                    <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border">
+                <div class="flex flex-col gap-2">
+                    <label class="inline-flex items-center gap-2 px-3 py-2 rounded-xl border bg-gray-50">
                         <input type="checkbox" name="withTrashed" value="1" @checked($withTrashed) class="rounded">
                         <span class="text-sm">Ver eliminados</span>
                     </label>
-                    <button class="px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700">Filtrar</button>
+                    <div class="flex gap-2">
+                        <button type="submit" class="flex-1 px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-medium transition-colors">
+                            Filtrar
+                        </button>
+                        <a href="{{ route('administracion.instaladores.index') }}" 
+                           class="px-4 py-2 rounded-xl bg-gray-200 text-gray-700 hover:bg-gray-300 font-medium transition-colors">
+                            Limpiar
+                        </a>
+                    </div>
                 </div>
             </form>
 
             <a href="{{ route('administracion.instaladores.create') }}"
-               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm">
+               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm font-medium transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Nuevo Instalador
             </a>
         </div>
     </div>
+
+    {{-- Info de resultados --}}
+    @if($q || $withTrashed)
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+        <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div class="flex-1">
+            <p class="text-sm text-blue-800">
+                <strong>Filtros activos:</strong>
+                @if($q)
+                    Búsqueda: "{{ $q }}"
+                @endif
+                @if($withTrashed)
+                    {{ $q ? ' | ' : '' }}Mostrando eliminados
+                @endif
+            </p>
+            <p class="text-xs text-blue-600 mt-1">
+                Se encontraron <strong>{{ $instaladores->total() }}</strong> resultado(s)
+            </p>
+        </div>
+        <a href="{{ route('administracion.instaladores.index') }}" 
+           class="text-sm text-blue-600 hover:text-blue-800 font-medium underline">
+            Limpiar filtros
+        </a>
+    </div>
+    @endif
 
     {{-- Tabla --}}
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -91,44 +126,43 @@
                                 </span>
                             </td>
 
-                           {{-- Activo con confirmación --}}
-<td class="px-4 py-3">
-    @if(!$i->deleted_at)
-    <form action="{{ route('administracion.instaladores.toggle-activo', $i) }}" method="POST">
-        @csrf @method('PATCH')
+                            {{-- Activo con confirmación --}}
+                            <td class="px-4 py-3">
+                                @if(!$i->deleted_at)
+                                <form action="{{ route('administracion.instaladores.toggle-activo', $i) }}" method="POST">
+                                    @csrf @method('PATCH')
 
-        <button
-            type="submit"
-            class="relative inline-flex items-center h-6 w-11 rounded-full transition focus:outline-none js-confirm"
-            title="Cambiar estado"
-            data-title="Cambiar estado"
-            data-text="¿Deseas {{ $i->activo==='S' ? 'marcar como Inactivo' : 'marcar como Activo' }} a este instalador? (Este cambio es de estado operativo, no afecta el acceso)"
-            data-icon="question"
-            data-confirm="Sí, cambiar"
-            data-cancel="Cancelar"
-            >
-            <span class="sr-only">Toggle</span>
-            <span class="absolute inset-0 rounded-full {{ $i->activo==='S' ? 'bg-green-500/90' : 'bg-gray-300' }}"></span>
-            <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition {{ $i->activo==='S' ? 'translate-x-6' : 'translate-x-0.5' }}"></span>
-        </button>
-    </form>
-    @else
-        <span class="text-xs text-gray-500">—</span>
-    @endif
-</td>
-
+                                    <button
+                                        type="submit"
+                                        class="relative inline-flex items-center h-6 w-11 rounded-full transition focus:outline-none js-confirm"
+                                        title="Cambiar estado"
+                                        data-title="Cambiar estado"
+                                        data-text="¿Deseas {{ $i->activo==='S' ? 'marcar como Inactivo' : 'marcar como Activo' }} a este instalador? (Este cambio es de estado operativo, no afecta el acceso)"
+                                        data-icon="question"
+                                        data-confirm="Sí, cambiar"
+                                        data-cancel="Cancelar"
+                                        >
+                                        <span class="sr-only">Toggle</span>
+                                        <span class="absolute inset-0 rounded-full {{ $i->activo==='S' ? 'bg-green-500/90' : 'bg-gray-300' }}"></span>
+                                        <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition {{ $i->activo==='S' ? 'translate-x-6' : 'translate-x-0.5' }}"></span>
+                                    </button>
+                                </form>
+                                @else
+                                    <span class="text-xs text-gray-500">—</span>
+                                @endif
+                            </td>
 
                             {{-- Acciones --}}
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-2 justify-end">
                                     @if(!$i->deleted_at)
                                         <a href="{{ route('administracion.instaladores.edit', $i) }}"
-                                           class="px-3 py-1.5 rounded-lg border hover:bg-gray-50">Editar</a>
+                                           class="px-3 py-1.5 rounded-lg border hover:bg-gray-50 transition-colors">Editar</a>
 
                                         <form action="{{ route('administracion.instaladores.destroy', $i) }}" method="POST">
                                             @csrf @method('DELETE')
                                             <button
-                                                class="px-3 py-1.5 rounded-lg border text-red-600 hover:bg-red-50 js-confirm"
+                                                class="px-3 py-1.5 rounded-lg border text-red-600 hover:bg-red-50 js-confirm transition-colors"
                                                 data-title="Enviar a papelera"
                                                 data-text="Podrás restaurarlo luego."
                                                 data-icon="warning"
@@ -141,7 +175,7 @@
                                         <form action="{{ route('administracion.instaladores.restore', $i->id) }}" method="POST">
                                             @csrf
                                             <button
-                                                class="px-3 py-1.5 rounded-lg border hover:bg-gray-50 js-confirm"
+                                                class="px-3 py-1.5 rounded-lg border hover:bg-gray-50 js-confirm transition-colors"
                                                 data-title="Restaurar instalador"
                                                 data-text="Se reactivará el registro."
                                                 data-icon="question"
@@ -153,7 +187,7 @@
                                         <form action="{{ route('administracion.instaladores.force-delete', $i->id) }}" method="POST">
                                             @csrf @method('DELETE')
                                             <button
-                                                class="px-3 py-1.5 rounded-lg border text-red-600 hover:bg-red-50 js-confirm"
+                                                class="px-3 py-1.5 rounded-lg border text-red-600 hover:bg-red-50 js-confirm transition-colors"
                                                 data-title="Eliminar definitivamente"
                                                 data-text="Esta acción no se puede deshacer."
                                                 data-icon="error"
@@ -174,7 +208,7 @@
                                 <p class="text-gray-600 font-medium">Sin resultados</p>
                                 <p class="text-gray-500 text-sm">Prueba cambiando el filtro o crea un nuevo instalador.</p>
                                 <a href="{{ route('administracion.instaladores.create') }}"
-                                   class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">
+                                   class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors">
                                     Crear instalador
                                 </a>
                             </td>
@@ -184,9 +218,12 @@
             </table>
         </div>
 
-        <div class="p-4">
+        {{-- Paginación con filtros --}}
+        @if($instaladores->hasPages())
+        <div class="p-4 border-t border-gray-200">
             {{ $instaladores->links() }}
         </div>
+        @endif
     </div>
 </div>
 @endsection
@@ -262,5 +299,3 @@ document.addEventListener('submit', async (e) => {
 });
 </script>
 @endpush
-
-

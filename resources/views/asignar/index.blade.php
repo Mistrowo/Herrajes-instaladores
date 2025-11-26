@@ -372,7 +372,7 @@
                 <!-- Instaladores en Grid 2x2 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Instalador 1</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Instalador 1 (Instalador a cargo)</label>
                         <select name="asignado1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Seleccionar...</option>
                             @foreach($instaladores as $instalador)
