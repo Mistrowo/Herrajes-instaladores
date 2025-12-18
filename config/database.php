@@ -107,6 +107,20 @@ return [
         //'trust_server_certificate' => env('DB_TRUST_SERVER_CERT_SOFT', true),
     ],
 
+     'ventas' => [
+            'driver' => 'mysql',
+            'host' => env('DB_HOST_VENTAS', '127.0.0.1'),
+            'port' => env('DB_PORT_VENTAS', '3306'),
+            'database' => env('DB_DATABASE_VENTAS', 'portal-clientes'),
+            'username' => env('DB_USERNAME_VENTAS', 'root'),
+            'password' => env('DB_PASSWORD_VENTAS', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
   
     ],
 

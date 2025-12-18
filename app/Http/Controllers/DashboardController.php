@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\AsignarService;
+use App\Services\SucursalService; // ⭐ AGREGAR
 use App\Models\NotaVtaActualiza;
 use App\Models\Asigna;
 use Illuminate\Http\Request;
@@ -12,10 +13,14 @@ use Illuminate\Http\JsonResponse;
 class DashboardController extends Controller
 {
     protected AsignarService $asignarService;
+    protected SucursalService $sucursalService; // ⭐ AGREGAR
 
-    public function __construct(AsignarService $asignarService)
-    {
+    public function __construct(
+        AsignarService $asignarService,
+        SucursalService $sucursalService // ⭐ AGREGAR
+    ) {
         $this->asignarService = $asignarService;
+        $this->sucursalService = $sucursalService; // ⭐ AGREGAR
         $this->middleware(['auth', 'active.instalador']);
     }
 
@@ -27,7 +32,6 @@ class DashboardController extends Controller
         /** @var \App\Models\Instalador $user */
         $user = auth()->user();
         
-       
         if ($user->esAdmin()) {
             $notasVenta = NotaVtaActualiza::orderBy('nv_femision', 'desc')
                 ->paginate(10);
@@ -55,11 +59,9 @@ class DashboardController extends Controller
         $user = auth()->user();
         $buscar = $request->input('buscar', '');
         
-        // Si es admin, buscar en todas
         if ($user->esAdmin()) {
             $query = NotaVtaActualiza::query();
         } else {
-            // Si es instalador, solo en las asignadas
             $asignaciones = Asigna::porInstalador($user->id)
                 ->whereIn('estado', ['aceptada', 'en_proceso'])
                 ->get();
@@ -69,7 +71,6 @@ class DashboardController extends Controller
             $query = NotaVtaActualiza::whereIn('nv_folio', $folios);
         }
         
-        // Aplicar búsqueda
         if (!empty($buscar)) {
             $query->buscar($buscar);
         }
@@ -84,6 +85,61 @@ class DashboardController extends Controller
     }
 
     /**
+     * ⭐ NUEVO MÉTODO - Obtener sucursales por nombre de cliente
+     */
+    public function obtenerSucursales(Request $request): JsonResponse
+    {
+        try {
+            $nombreCliente = $request->input('nombre_cliente');
+            
+            if (empty($nombreCliente)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Debe proporcionar el nombre del cliente',
+                    'sucursales' => []
+                ], 400);
+            }
+
+            $sucursales = $this->sucursalService->buscarSucursalesPorNombreCliente($nombreCliente);
+
+            if ($sucursales->isEmpty()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'No se encontraron sucursales para este cliente',
+                    'sucursales' => []
+                ]);
+            }
+
+            $sucursalesFormateadas = $sucursales->map(function ($sucursal) {
+                return [
+                    'id' => $sucursal->id,
+                    'nombre' => $sucursal->nombre,
+                    'direccion' => $sucursal->direccion,
+                    'comuna' => $sucursal->comuna,
+                    'region' => $sucursal->region,
+                    'direccion_completa' => $sucursal->direccion_completa,
+                    'telefono' => $sucursal->telefono,
+                    'email' => $sucursal->email,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sucursales encontradas',
+                'sucursales' => $sucursalesFormateadas,
+                'total' => $sucursalesFormateadas->count()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener sucursales: ' . $e->getMessage(),
+                'sucursales' => []
+            ], 500);
+        }
+    }
+
+    /**
      * Obtener detalles de una nota de venta (AJAX)
      */
     public function obtenerDetallesNV(Request $request): JsonResponse
@@ -93,7 +149,6 @@ class DashboardController extends Controller
         /** @var \App\Models\Instalador $user */
         $user = auth()->user();
         
-        // Verificar permisos
         if (!$user->esAdmin()) {
             $tieneAsignacion = Asigna::porInstalador($user->id)
                 ->where('nota_venta', $folio)
@@ -108,7 +163,6 @@ class DashboardController extends Controller
             }
         }
         
-        // Obtener nota de venta
         $notaVenta = NotaVtaActualiza::where('nv_folio', $folio)->first();
         
         if (!$notaVenta) {
@@ -118,9 +172,8 @@ class DashboardController extends Controller
             ], 404);
         }
         
-        // Obtener asignación si existe
         $asignacion = Asigna::where('nota_venta', $folio)
-            ->with(['instalador1', 'instalador2', 'instalador3', 'instalador4'])
+            ->with(['instalador1', 'instalador2', 'instalador3', 'instalador4', 'sucursal'])
             ->first();
         
         $dataAsignacion = null;
@@ -140,6 +193,17 @@ class DashboardController extends Controller
                 $instaladores[] = $asignacion->instalador4->nombre;
             }
             
+            $sucursalData = null;
+            if ($asignacion->sucursal) {
+                $sucursalData = [
+                    'id' => $asignacion->sucursal->id,
+                    'nombre' => $asignacion->sucursal->nombre,
+                    'direccion' => $asignacion->sucursal->direccion,
+                    'comuna' => $asignacion->sucursal->comuna,
+                    'direccion_completa' => $asignacion->sucursal->direccion_completa,
+                ];
+            }
+            
             $dataAsignacion = [
                 'id' => $asignacion->id,
                 'fecha_asigna' => $asignacion->fecha_asigna_formateada,
@@ -149,6 +213,7 @@ class DashboardController extends Controller
                 'estado_badge' => $asignacion->estado_badge,
                 'instaladores' => $instaladores,
                 'cantidad_instaladores' => $asignacion->cantidadInstaladores(),
+                'sucursal' => $sucursalData, // ⭐ NUEVO
             ];
         }
         

@@ -9,7 +9,7 @@
       <img src="{{ asset('logo/logo_ilesa.png') }}" alt="Logo Ilesa"
            class="mx-auto mb-2 transition-all duration-300 hover:scale-105" style="max-width: 180px;">
 
-      <h2 class="text-2xl font-bold mb-6 text-gray-800">HERRAJES INSTALADORES</h2>
+      <h2 class="text-2xl font-bold mb-6 text-gray-800">APP INSTALADORES</h2>
       
       {{-- Mostrar mensaje de éxito --}}
       @if(session('success'))
@@ -78,16 +78,7 @@
           @enderror
         </div>
         
-        {{-- Remember Me --}}
-        <div class="mb-4 flex items-center">
-          <input type="checkbox" 
-                 name="remember" 
-                 id="remember" 
-                 class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-          <label for="remember" class="ml-2 block text-sm text-gray-700">
-            Mantener sesión iniciada
-          </label>
-        </div>
+     
         
         {{-- Botón Ingresar --}}
         <button type="submit"

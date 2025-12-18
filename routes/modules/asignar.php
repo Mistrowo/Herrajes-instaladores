@@ -8,6 +8,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('asignar')->as('asignar.')->group(function () {
         Route::get('/', [AsignarController::class, 'index'])->name('index');
+         Route::get('/sucursales', [AsignarController::class, 'obtenerSucursales'])->name('sucursales');
         
         Route::get('/crear', [AsignarController::class, 'create'])->name('create');
         Route::post('/', [AsignarController::class, 'store'])->name('store');

@@ -15,6 +15,7 @@ class Herraje extends Model
         'nv_folio',
         'asigna_id',
         'instalador_id',
+        'sucursal_id',  // ⭐ NUEVO
         'estado',
         'items_count',
         'total_estimado',
@@ -28,6 +29,7 @@ class Herraje extends Model
         'items_count'    => 'integer',
     ];
 
+    // Relaciones
     public function items()
     {
         return $this->hasMany(HerrajeItem::class, 'herraje_id');
@@ -43,6 +45,13 @@ class Herraje extends Model
         return $this->belongsTo(Instalador::class, 'instalador_id');
     }
 
+    // ⭐ NUEVA RELACIÓN
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class, 'sucursal_id');
+    }
+
+    // Métodos
     public function recalcularTotales(): void
     {
         $total = $this->items()->whereNull('deleted_at')->get()
@@ -54,5 +63,10 @@ class Herraje extends Model
         $this->items_count   = $this->items()->whereNull('deleted_at')->count();
         $this->total_estimado = $total ?: null;
         $this->save();
+    }
+
+    public function getSucursalNombreAttribute(): string
+    {
+        return $this->sucursal ? $this->sucursal->nombre : 'Sin sucursal';
     }
 }

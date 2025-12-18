@@ -1,8 +1,7 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\EvidenciaController;
-
 
 Route::middleware(['auth'])
     ->prefix('dashboard')
@@ -20,5 +19,9 @@ Route::middleware(['auth'])
 
             Route::delete('/{id}', [EvidenciaController::class, 'destroy'])
                 ->name('destroy');
+
+            // ⭐ AGREGAR ESTA RUTA QUE FALTA
+            Route::patch('/{id}/sucursal', [EvidenciaController::class, 'cambiarSucursal'])
+                ->name('cambiar-sucursal');
         });
     });

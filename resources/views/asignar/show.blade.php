@@ -16,6 +16,18 @@
                     {{ $asignacion->estado_badge['text'] }}
                 </span>
             </div>
+            
+            <!-- ⭐ NUEVO - Sucursal -->
+            @if($asignacion->sucursal)
+            <div class="col-span-2">
+                <p class="text-xs text-gray-500">Sucursal</p>
+                <div class="mt-1 bg-blue-50 border border-blue-200 rounded p-2">
+                    <p class="text-sm font-medium text-gray-900">📍 {{ $asignacion->sucursal->nombre }}</p>
+                    <p class="text-xs text-gray-600 mt-1">{{ $asignacion->sucursal->direccion_completa }}</p>
+                </div>
+            </div>
+            @endif
+            
             <div>
                 <p class="text-xs text-gray-500">Solicita</p>
                 <p class="text-sm font-medium text-gray-900">{{ $asignacion->solicita }}</p>

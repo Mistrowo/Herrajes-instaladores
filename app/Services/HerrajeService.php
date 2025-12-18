@@ -12,27 +12,34 @@ use Illuminate\Validation\ValidationException;
 
 class HerrajeService
 {
+    protected SucursalService $sucursalService;
+
+    public function __construct(SucursalService $sucursalService)
+    {
+        $this->sucursalService = $sucursalService;
+    }
+
     /**
      * Obtener o crear herraje por folio de nota de venta
      */
-    public function obtenerOCrearHerraje(int $folio, ?int $userId = null): Herraje
+    public function obtenerOCrearHerraje(int $folio, ?int $userId = null, ?int $sucursalId = null): Herraje
     {
-        Log::info('SERVICE: obtenerOCrearHerraje', compact('folio', 'userId'));
+        Log::info('SERVICE: obtenerOCrearHerraje', compact('folio', 'userId', 'sucursalId'));
 
         $herraje = Herraje::firstOrCreate(
             ['nv_folio' => $folio],
             [
                 'estado'         => 'en_revision',
+                'sucursal_id'    => $sucursalId,
                 'created_by'     => $userId,
                 'items_count'    => 0,
-                // Evita poner null si la columna no lo permite
-                // 'total_estimado' => null,
             ]
         );
 
         Log::info('SERVICE: Herraje obtenido/creado', [
             'herraje_id'         => $herraje->id,
             'nv_folio'           => $herraje->nv_folio,
+            'sucursal_id'        => $herraje->sucursal_id,
             'estado'             => $herraje->estado,
             'wasRecentlyCreated' => $herraje->wasRecentlyCreated,
         ]);
@@ -51,9 +58,9 @@ class HerrajeService
             'user_id'    => $userId,
         ]);
 
-        // Validación ligera (solo si vienen)
         $validator = Validator::make($datos, [
             'instalador_id' => ['nullable', 'integer'],
+            'sucursal_id'   => ['nullable', 'integer'],
             'estado'        => ['nullable', 'in:en_revision,aprobado,completado'],
             'observaciones' => ['nullable', 'string'],
         ]);
@@ -64,12 +71,10 @@ class HerrajeService
 
         return DB::transaction(function () use ($herraje, $datos, $userId) {
             $datosActualizar = [
-                // Solo incluimos claves presentes para no sobreescribir con null
-                ...Arr::only($datos, ['instalador_id', 'estado', 'observaciones']),
+                ...Arr::only($datos, ['instalador_id', 'sucursal_id', 'estado', 'observaciones']),
                 'updated_by' => $userId,
             ];
 
-            // Si no viene estado, forzamos por defecto
             if (!array_key_exists('estado', $datosActualizar)) {
                 $datosActualizar['estado'] = $herraje->estado ?? 'en_revision';
             }
@@ -83,6 +88,7 @@ class HerrajeService
                 'herraje_id'         => $herraje->id,
                 'nuevo_estado'       => $herraje->estado,
                 'nuevo_instalador_id'=> $herraje->instalador_id,
+                'nuevo_sucursal_id'  => $herraje->sucursal_id,
             ]);
 
             return true;
@@ -105,7 +111,7 @@ class HerrajeService
             $datosItem = [
                 'herraje_id'   => $herraje->id,
                 'descripcion'  => $validated['descripcion'],
-                'cantidad'     => (int) $validated['cantidad'],
+                'cantidad'     => (float) $validated['cantidad'],
                 'codigo'       => $validated['codigo'] ?? null,
                 'unidad'       => $validated['unidad'] ?? 'UN',
                 'precio'       => array_key_exists('precio', $validated) ? (float) $validated['precio'] : null,
@@ -122,7 +128,6 @@ class HerrajeService
                 'cantidad'    => $item->cantidad,
             ]);
 
-            // Recalcular totales dentro de la misma transacción
             $herraje->recalcularTotales();
             $herraje->refresh();
 
@@ -151,7 +156,7 @@ class HerrajeService
         return DB::transaction(function () use ($item, $validated) {
             $datosActualizar = [
                 'descripcion'  => $validated['descripcion'],
-                'cantidad'     => (int) $validated['cantidad'],
+                'cantidad'     => (float) $validated['cantidad'],
                 'codigo'       => $validated['codigo'] ?? null,
                 'unidad'       => $validated['unidad'] ?? 'UN',
                 'precio'       => array_key_exists('precio', $validated) ? (float) $validated['precio'] : null,
@@ -164,7 +169,6 @@ class HerrajeService
 
             Log::info('SERVICE: Ítem actualizado en DB', ['item_id' => $item->id]);
 
-            // Recalcular totales en el herraje relacionado
             $item->herraje->recalcularTotales();
 
             Log::info('SERVICE: Totales recalculados', ['herraje_id' => $item->herraje_id]);
@@ -184,7 +188,6 @@ class HerrajeService
         ]);
 
         return DB::transaction(function () use ($item) {
-            // Guardamos info antes de borrar
             $herraje = $item->herraje;
             $deletedId = $item->id;
 
@@ -214,6 +217,7 @@ class HerrajeService
             'items_count'       => $herraje->items()->count(),
             'total_estimado'    => $herraje->total_estimado ?? 0,
             'estado'            => $herraje->estado,
+            'sucursal_nombre'   => $herraje->sucursal_nombre,
             'ultimo_actualizado'=> optional($herraje->updated_at)->format('d-m-Y H:i'),
         ];
 
@@ -239,20 +243,13 @@ class HerrajeService
     }
 
     /**
-     * ------------------------------------------------------
-     * Helpers
-     * ------------------------------------------------------
-     */
-
-    /**
-     * Valida payload para crear/actualizar ítems.
-     * Lanza ValidationException si no cumple.
+     * Validar payload para crear/actualizar ítems
      */
     private function validateItemPayload(array $datos): array
     {
         $validator = Validator::make($datos, [
             'descripcion'  => ['required', 'string', 'max:500'],
-            'cantidad'     => ['required', 'numeric', 'min:0'],
+            'cantidad'     => ['required', 'numeric', 'min:0.01'],
             'codigo'       => ['nullable', 'string', 'max:100'],
             'unidad'       => ['nullable', 'string', 'max:10'],
             'precio'       => ['nullable', 'numeric', 'min:0'],

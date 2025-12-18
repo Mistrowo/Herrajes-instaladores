@@ -8,6 +8,7 @@ use App\Models\HerrajeItem;
 use App\Models\Instalador;
 use App\Models\NotaVtaActualiza;
 use App\Services\HerrajeService;
+use App\Services\SucursalService;
 use App\Http\Requests\StoreHerrajeItemRequest;
 use App\Http\Requests\UpdateHerrajeItemRequest;
 use App\Http\Requests\UpdateHerrajeHeaderRequest;
@@ -19,13 +20,12 @@ use Illuminate\Support\Facades\Log;
 class HerrajeController extends Controller
 {
     protected HerrajeService $herrajeService;
+    protected SucursalService $sucursalService;
 
-    /**
-     * Constructor
-     */
-    public function __construct(HerrajeService $herrajeService)
+    public function __construct(HerrajeService $herrajeService, SucursalService $sucursalService)
     {
         $this->herrajeService = $herrajeService;
+        $this->sucursalService = $sucursalService;
     }
 
     /**
@@ -36,47 +36,50 @@ class HerrajeController extends Controller
         Log::info('=== INICIANDO showByFolio ===', [
             'folio' => $folio,
             'user_id' => Auth::id(),
-            'user_email' => Auth::user()->correo ?? 'N/A'
         ]);
 
         try {
-            // Obtener o crear herraje
-            $herraje = $this->herrajeService->obtenerOCrearHerraje($folio, Auth::id());
+            // Buscar nota de venta
+            $nota = NotaVtaActualiza::where('nv_folio', $folio)->first();
             
-            Log::info('Herraje obtenido/creado', [
-                'herraje_id' => $herraje->id,
-                'estado' => $herraje->estado
-            ]);
-
-            // Cargar relaciones
-            $herraje->load(['items', 'instalador', 'asigna']);
-
-            // Buscar nota de venta en SQL Server (si existe el modelo)
-            $nota = null;
-            if (class_exists(NotaVtaActualiza::class)) {
-                $nota = NotaVtaActualiza::where('nv_folio', $folio)->first();
-                Log::info('Nota de venta buscada', ['encontrada' => $nota ? 'SI' : 'NO']);
-            }
-
-            // Buscar asignación relacionada
+            // Buscar asignación
             $asigna = Asigna::where('nota_venta', $folio)
+                ->with('sucursal')
                 ->latest('fecha_asigna')
                 ->first();
-            
-            Log::info('Asignación buscada', ['encontrada' => $asigna ? 'SI' : 'NO']);
 
-            // Instaladores activos para selector
+            // Obtener sucursal de la asignación si existe
+            $sucursalId = $asigna ? $asigna->sucursal_id : null;
+
+            // Obtener o crear herraje
+            $herraje = $this->herrajeService->obtenerOCrearHerraje($folio, Auth::id(), $sucursalId);
+            
+            // Cargar relaciones
+            $herraje->load(['items', 'instalador', 'asigna', 'sucursal']);
+
+            // Obtener sucursales disponibles para el cliente
+            $sucursales = collect();
+            if ($nota && $nota->nv_cliente) {
+                $sucursales = $this->sucursalService->buscarSucursalesPorNombreCliente($nota->nv_cliente);
+            }
+
+            // Instaladores activos
             $instaladores = Instalador::activo()
                 ->orderBy('nombre')
                 ->get(['id', 'nombre', 'usuario']);
-            
-            Log::info('Instaladores cargados', ['cantidad' => $instaladores->count()]);
+
+            Log::info('Datos cargados exitosamente', [
+                'herraje_id' => $herraje->id,
+                'sucursales_count' => $sucursales->count(),
+                'instaladores_count' => $instaladores->count(),
+            ]);
 
             return view('herrajes.show', compact(
                 'herraje',
                 'nota',
                 'asigna',
-                'instaladores'
+                'instaladores',
+                'sucursales'
             ));
         } catch (\Exception $e) {
             Log::error('Error en showByFolio', [
@@ -101,9 +104,7 @@ class HerrajeController extends Controller
         try {
             $validated = $request->validated();
             
-            Log::info('Datos validados correctamente', [
-                'validated' => $validated
-            ]);
+            Log::info('Datos validados correctamente', ['validated' => $validated]);
 
             $this->herrajeService->actualizarEncabezado(
                 $herraje,
@@ -111,12 +112,13 @@ class HerrajeController extends Controller
                 Auth::id()
             );
 
-            $herrajeActualizado = $herraje->fresh();
+            $herrajeActualizado = $herraje->fresh(['sucursal']);
 
             Log::info('Encabezado actualizado exitosamente', [
                 'herraje_id' => $herraje->id,
                 'nuevo_estado' => $herrajeActualizado->estado,
-                'nuevo_instalador_id' => $herrajeActualizado->instalador_id
+                'nuevo_instalador_id' => $herrajeActualizado->instalador_id,
+                'nuevo_sucursal_id' => $herrajeActualizado->sucursal_id,
             ]);
 
             return response()->json([
@@ -125,12 +127,12 @@ class HerrajeController extends Controller
                 'data' => [
                     'estado' => $herrajeActualizado->estado,
                     'instalador_id' => $herrajeActualizado->instalador_id,
+                    'sucursal_id' => $herrajeActualizado->sucursal_id,
+                    'sucursal_nombre' => $herrajeActualizado->sucursal_nombre,
                 ]
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Error de validación en updateHeader', [
-                'errors' => $e->errors()
-            ]);
+            Log::warning('Error de validación en updateHeader', ['errors' => $e->errors()]);
             
             return response()->json([
                 'success' => false,
@@ -159,18 +161,13 @@ class HerrajeController extends Controller
             'herraje_id' => $herraje->id,
             'user_id' => Auth::id(),
             'datos_recibidos' => $request->all(),
-            'raw_input' => file_get_contents('php://input')
         ]);
 
         try {
             $validated = $request->validated();
-            
-            // Forzar precio a null
             $validated['precio'] = null;
             
-            Log::info('Datos validados para crear ítem', [
-                'validated' => $validated
-            ]);
+            Log::info('Datos validados para crear ítem', ['validated' => $validated]);
 
             $item = $this->herrajeService->crearItem($herraje, $validated);
 
@@ -178,14 +175,9 @@ class HerrajeController extends Controller
                 'item_id' => $item->id,
                 'descripcion' => $item->descripcion,
                 'cantidad' => $item->cantidad,
-                'precio' => $item->precio
             ]);
 
             $resumen = $this->herrajeService->obtenerResumen($herraje->fresh());
-
-            Log::info('Resumen actualizado', [
-                'resumen' => $resumen
-            ]);
 
             return response()->json([
                 'success' => true,
@@ -196,9 +188,7 @@ class HerrajeController extends Controller
                 ]
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Error de validación en storeItem', [
-                'errors' => $e->errors()
-            ]);
+            Log::warning('Error de validación en storeItem', ['errors' => $e->errors()]);
             
             return response()->json([
                 'success' => false,
@@ -208,8 +198,6 @@ class HerrajeController extends Controller
         } catch (\Exception $e) {
             Log::error('Error en storeItem', [
                 'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
             
@@ -232,13 +220,8 @@ class HerrajeController extends Controller
             'datos_recibidos' => $request->all()
         ]);
 
-        // Verificar que el ítem pertenece al herraje
         if ($item->herraje_id !== $herraje->id) {
-            Log::warning('Intento de actualizar ítem que no pertenece al herraje', [
-                'herraje_id' => $herraje->id,
-                'item_herraje_id' => $item->herraje_id,
-                'item_id' => $item->id
-            ]);
+            Log::warning('Intento de actualizar ítem que no pertenece al herraje');
             
             return response()->json([
                 'success' => false,
@@ -248,19 +231,11 @@ class HerrajeController extends Controller
 
         try {
             $validated = $request->validated();
-            
-            // Forzar precio a null
             $validated['precio'] = null;
             
-            Log::info('Datos validados para actualizar ítem', [
-                'validated' => $validated
-            ]);
+            Log::info('Datos validados para actualizar ítem', ['validated' => $validated]);
 
             $this->herrajeService->actualizarItem($item, $validated);
-
-            Log::info('Ítem actualizado exitosamente', [
-                'item_id' => $item->id
-            ]);
 
             $itemActualizado = $item->fresh();
             $resumen = $this->herrajeService->obtenerResumen($herraje->fresh());
@@ -274,9 +249,7 @@ class HerrajeController extends Controller
                 ]
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Error de validación en updateItem', [
-                'errors' => $e->errors()
-            ]);
+            Log::warning('Error de validación en updateItem', ['errors' => $e->errors()]);
             
             return response()->json([
                 'success' => false,
@@ -307,13 +280,8 @@ class HerrajeController extends Controller
             'user_id' => Auth::id()
         ]);
 
-        // Verificar que el ítem pertenece al herraje
         if ($item->herraje_id !== $herraje->id) {
-            Log::warning('Intento de eliminar ítem que no pertenece al herraje', [
-                'herraje_id' => $herraje->id,
-                'item_herraje_id' => $item->herraje_id,
-                'item_id' => $item->id
-            ]);
+            Log::warning('Intento de eliminar ítem que no pertenece al herraje');
             
             return response()->json([
                 'success' => false,
@@ -323,10 +291,6 @@ class HerrajeController extends Controller
 
         try {
             $this->herrajeService->eliminarItem($item);
-
-            Log::info('Ítem eliminado exitosamente', [
-                'item_id' => $item->id
-            ]);
 
             $resumen = $this->herrajeService->obtenerResumen($herraje->fresh());
 
@@ -364,10 +328,6 @@ class HerrajeController extends Controller
             $items = $herraje->items()
                 ->orderBy('created_at', 'desc')
                 ->get();
-
-            Log::info('Ítems cargados', [
-                'cantidad' => $items->count()
-            ]);
 
             $resumen = $this->herrajeService->obtenerResumen($herraje);
 
