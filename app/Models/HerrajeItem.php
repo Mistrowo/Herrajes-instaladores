@@ -13,6 +13,7 @@ class HerrajeItem extends Model
 
     protected $fillable = [
         'herraje_id',
+        'sucursal_id',  
         'codigo',
         'descripcion',
         'unidad',
@@ -29,5 +30,15 @@ class HerrajeItem extends Model
     public function herraje()
     {
         return $this->belongsTo(Herraje::class, 'herraje_id');
+    }
+
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class, 'sucursal_id');
+    }
+
+    public function getSucursalNombreAttribute(): string
+    {
+        return $this->sucursal ? $this->sucursal->nombre : 'Sin sucursal';
     }
 }

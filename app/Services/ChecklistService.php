@@ -10,13 +10,25 @@ use Illuminate\Support\Facades\Log;
 
 class ChecklistService
 {
+    protected SucursalService $sucursalService;
+
+    public function __construct(SucursalService $sucursalService)
+    {
+        $this->sucursalService = $sucursalService;
+    }
+
     /**
      * Obtener asignación y checklist por folio
      */
     public function getByFolio(int $folio): array
     {
-        $asignacion = Asigna::where('nota_venta', $folio)->firstOrFail();
-        $checklist = Checklist::where('asigna_id', $asignacion->id)->first();
+        $asignacion = Asigna::where('nota_venta', $folio)
+            ->with('sucursal')
+            ->firstOrFail();
+            
+        $checklist = Checklist::where('asigna_id', $asignacion->id)
+            ->with('sucursal')
+            ->first();
 
         return [
             'asignacion' => $asignacion,
@@ -32,14 +44,25 @@ class ChecklistService
         try {
             DB::beginTransaction();
 
+            Log::info('ChecklistService: storeOrUpdate - INICIO', [
+                'folio' => $folio,
+                'data_keys' => array_keys($data),
+                'sucursal_id' => $data['sucursal_id'] ?? null
+            ]);
+
             // Obtener asignación
             $asignacion = Asigna::where('nota_venta', $folio)->firstOrFail();
             
             // Obtener instalador autenticado
             $instalador = Auth::user();
 
-            // Limpiar datos: remover _token y otros campos no necesarios
+            // Limpiar datos
             $cleanData = $this->cleanData($data);
+
+            Log::info('ChecklistService: Datos limpios', [
+                'clean_data_keys' => array_keys($cleanData),
+                'sucursal_id' => $cleanData['sucursal_id'] ?? null
+            ]);
 
             // Crear o actualizar checklist
             $checklist = Checklist::updateOrCreate(
@@ -47,9 +70,15 @@ class ChecklistService
                 array_merge($cleanData, [
                     'nota_venta' => $folio,
                     'instalador_id' => $instalador->id,
+                    'sucursal_id' => $cleanData['sucursal_id'] ?? $asignacion->sucursal_id ?? null, // ⭐ IMPORTANTE
                     'fecha_completado' => now(),
                 ])
             );
+
+            Log::info('ChecklistService: Checklist guardado', [
+                'checklist_id' => $checklist->id,
+                'sucursal_id' => $checklist->sucursal_id
+            ]);
 
             DB::commit();
 
@@ -73,18 +102,20 @@ class ChecklistService
      */
     private function cleanData(array $data): array
     {
-        // Remover campos que no son parte del modelo
         $fieldsToRemove = ['_token', '_method'];
         
         foreach ($fieldsToRemove as $field) {
             unset($data[$field]);
         }
 
-        // Convertir valores vacíos a null
         foreach ($data as $key => $value) {
-            if ($value === '') {
+            if ($value === '' && $key !== 'sucursal_id') {
                 $data[$key] = null;
             }
+        }
+
+        if (isset($data['sucursal_id']) && $data['sucursal_id'] === '') {
+            $data['sucursal_id'] = null;
         }
 
         return $data;
@@ -107,6 +138,7 @@ class ChecklistService
             'completion' => $checklist->getCompletionPercentage(),
             'has_errors' => $checklist->hasAnyErrors(),
             'error_count' => $checklist->countErrors(),
+            'sucursal_nombre' => $checklist->sucursal_nombre, 
             'completed_at' => $checklist->fecha_completado?->format('d/m/Y H:i'),
         ];
     }

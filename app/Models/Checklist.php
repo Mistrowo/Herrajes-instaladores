@@ -10,18 +10,13 @@ class Checklist extends Model
 {
     use HasFactory, SoftDeletes;
 
-    /**
-     * Nombre de la tabla
-     */
     protected $table = 'sh_checklist';
 
-    /**
-     * Atributos asignables
-     */
     protected $fillable = [
         'asigna_id',
         'nota_venta',
         'instalador_id',
+        'sucursal_id',  // ⭐ NUEVO
         
         // Sección 1: Proyecto/Pedido
         'rectificacion_medidas',
@@ -103,11 +98,6 @@ class Checklist extends Model
         'fecha_completado',
     ];
 
-    /**
-     * Casts de atributos
-     * ⚠️ NO usar 'boolean' para campos ENUM('SI', 'NO')
-     * Solo para fecha_completado
-     */
     protected function casts(): array
     {
         return [
@@ -115,25 +105,30 @@ class Checklist extends Model
         ];
     }
 
-    /**
-     * Relación con Asigna
-     */
+    // Relaciones
     public function asignacion()
     {
         return $this->belongsTo(Asigna::class, 'asigna_id');
     }
 
-    /**
-     * Relación con Instalador
-     */
     public function instalador()
     {
         return $this->belongsTo(Instalador::class, 'instalador_id');
     }
 
-    /**
-     * Verificar si hay algún error en el proyecto
-     */
+    // ⭐ NUEVA RELACIÓN
+    public function sucursal()
+    {
+        return $this->belongsTo(Sucursal::class, 'sucursal_id');
+    }
+
+    // ⭐ NUEVO ACCESSOR
+    public function getSucursalNombreAttribute(): string
+    {
+        return $this->sucursal ? $this->sucursal->nombre : 'Sin sucursal';
+    }
+
+    // Métodos existentes...
     public function hasAnyErrors(): bool
     {
         return $this->errores_ventas === 'SI'
@@ -146,9 +141,6 @@ class Checklist extends Model
             || $this->errores_otro === 'SI';
     }
 
-    /**
-     * Contar cantidad de errores
-     */
     public function countErrors(): int
     {
         $count = 0;
@@ -163,9 +155,6 @@ class Checklist extends Model
         return $count;
     }
 
-    /**
-     * Obtener porcentaje de completitud del checklist
-     */
     public function getCompletionPercentage(): int
     {
         $fields = [
@@ -189,17 +178,12 @@ class Checklist extends Model
         return $fields ? round(($completed / count($fields)) * 100) : 0;
     }
 
-    /**
-     * Verificar si el checklist está completo
-     */
     public function isComplete(): bool
     {
         return $this->getCompletionPercentage() === 100;
     }
 
-    /**
-     * Scope: Checklists con errores
-     */
+    // Scopes
     public function scopeWithErrors($query)
     {
         return $query->where(function($q) {
@@ -214,9 +198,6 @@ class Checklist extends Model
         });
     }
 
-    /**
-     * Scope: Checklists completos
-     */
     public function scopeComplete($query)
     {
         return $query->whereNotNull('fecha_completado')
@@ -225,25 +206,23 @@ class Checklist extends Model
                      ->whereNotNull('despacho_integral');
     }
 
-    /**
-     * Scope: Por nota de venta
-     */
     public function scopeByNotaVenta($query, $notaVenta)
     {
         return $query->where('nota_venta', $notaVenta);
     }
 
-    /**
-     * Scope: Por instalador
-     */
     public function scopeByInstalador($query, $instaladorId)
     {
         return $query->where('instalador_id', $instaladorId);
     }
 
-    /**
-     * Accessor: Formato de fecha completado
-     */
+    // ⭐ NUEVO SCOPE
+    public function scopeBySucursal($query, $sucursalId)
+    {
+        return $query->where('sucursal_id', $sucursalId);
+    }
+
+    // Accessors
     public function getFechaCompletadoFormateadaAttribute(): string
     {
         return $this->fecha_completado 
@@ -251,9 +230,6 @@ class Checklist extends Model
             : 'Pendiente';
     }
 
-    /**
-     * Accessor: Estado del checklist
-     */
     public function getEstadoAttribute(): string
     {
         if (!$this->fecha_completado) {
@@ -267,9 +243,6 @@ class Checklist extends Model
         return 'Completado';
     }
 
-    /**
-     * Accessor: Badge de estado (para UI)
-     */
     public function getEstadoBadgeAttribute(): array
     {
         if (!$this->fecha_completado) {

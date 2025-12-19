@@ -350,4 +350,34 @@ class HerrajeController extends Controller
             ], 500);
         }
     }
+
+
+
+/**
+ * Obtener ítems agrupados por sucursal
+ */
+public function itemsAgrupados(Herraje $herraje): JsonResponse
+{
+    Log::info('=== INICIANDO itemsAgrupados ===', ['herraje_id' => $herraje->id]);
+
+    try {
+        $agrupados = $this->herrajeService->obtenerItemsAgrupadosPorSucursal($herraje);
+        $resumen = $this->herrajeService->obtenerResumen($herraje);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'agrupados' => $agrupados,
+                'resumen' => $resumen,
+            ]
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Error en itemsAgrupados', ['error' => $e->getMessage()]);
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Error al obtener ítems agrupados: ' . $e->getMessage()
+        ], 500);
+    }
+}
 }

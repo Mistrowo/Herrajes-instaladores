@@ -171,6 +171,17 @@
             margin-top: 10px;
             margin-bottom: 10px;
         }
+
+        .sucursal-badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
         
         .footer {
             margin-top: 30px;
@@ -233,8 +244,18 @@
             <tr>
                 <td><strong>Instalador:</strong></td>
                 <td>{{ $checklist->instalador->nombre ?? 'N/A' }}</td>
-                <td><strong>Telefono:</strong></td>
+                <td><strong>Teléfono:</strong></td>
                 <td>{{ $checklist->telefono ?? 'N/A' }}</td>
+            </tr>
+            <tr>
+                <td><strong>Sucursal:</strong></td>
+                <td colspan="3">
+                    @if($checklist->sucursal)
+                        {{ $checklist->sucursal->nombre }} - {{ $checklist->sucursal->comuna }}
+                    @else
+                        Sin sucursal asignada
+                    @endif
+                </td>
             </tr>
             <tr>
                 <td><strong>Autorizado por:</strong></td>
@@ -243,7 +264,14 @@
         </table>
     </div>
 
-    {{-- Observaciones de cabecera (teléfono / autorizado por) --}}
+    {{-- Badge de Sucursal --}}
+    @if($checklist->sucursal)
+        <div class="sucursal-badge">
+            📍 Instalación en: {{ $checklist->sucursal->nombre }}
+        </div>
+    @endif
+
+    {{-- Observaciones de cabecera --}}
     @if($checklist->mod_autorizadas_por_obs || $checklist->telefono_obs)
         <div class="observaciones">
             <div class="observaciones-title">Observaciones generales:</div>
@@ -259,7 +287,6 @@
     @endif
     
     @php
-        // Helper para mostrar SI/NO
         $renderValue = function($value) {
             if ($value === 'SI') {
                 return '<span class="value-si">SI</span>';
@@ -270,7 +297,6 @@
             }
         };
 
-        // Helper para mostrar observaciones
         $renderObs = function($text) {
             if (!$text) {
                 return '<span class="obs-empty">-</span>';
@@ -281,10 +307,10 @@
     
     <!-- SECCIÓN 1: NÚMERO PROYECTO/PEDIDO -->
     <div class="section">
-        <div class="section-title">NUMERO PROYECTO/PEDIDO</div>
+        <div class="section-title">NÚMERO PROYECTO/PEDIDO</div>
         <div class="items-grid">
             <div class="item-row">
-                <div class="item-label">Rectificacion Medidas</div>
+                <div class="item-label">Rectificación Medidas</div>
                 <div class="item-value">{!! $renderValue($checklist->rectificacion_medidas) !!}</div>
                 <div class="item-obs">{!! $renderObs($checklist->rectificacion_medidas_obs) !!}</div>
             </div>
@@ -315,7 +341,7 @@
     <div class="section">
         <div class="section-title">ERRORES PROYECTO</div>
         @if($checklist->hasAnyErrors())
-            <div class="error-badge">Se encontraron {{ $checklist->countErrors() }} error(es)</div>
+            <div class="error-badge">⚠️ Se encontraron {{ $checklist->countErrors() }} error(es)</div>
         @endif
         <div class="items-grid">
             <div class="item-row">
@@ -324,17 +350,17 @@
                 <div class="item-obs">{!! $renderObs($checklist->errores_ventas_obs) !!}</div>
             </div>
             <div class="item-row">
-                <div class="item-label">Errores en Diseno</div>
+                <div class="item-label">Errores en Diseño</div>
                 <div class="item-value">{!! $renderValue($checklist->errores_diseno) !!}</div>
                 <div class="item-obs">{!! $renderObs($checklist->errores_diseno_obs) !!}</div>
             </div>
             <div class="item-row">
-                <div class="item-label">Errores en Rectificacion</div>
+                <div class="item-label">Errores en Rectificación</div>
                 <div class="item-value">{!! $renderValue($checklist->errores_rectificacion) !!}</div>
                 <div class="item-obs">{!! $renderObs($checklist->errores_rectificacion_obs) !!}</div>
             </div>
             <div class="item-row">
-                <div class="item-label">Errores en Produccion</div>
+                <div class="item-label">Errores en Producción</div>
                 <div class="item-value">{!! $renderValue($checklist->errores_produccion) !!}</div>
                 <div class="item-obs">{!! $renderObs($checklist->errores_produccion_obs) !!}</div>
             </div>
@@ -349,7 +375,7 @@
                 <div class="item-obs">{!! $renderObs($checklist->errores_despacho_obs) !!}</div>
             </div>
             <div class="item-row">
-                <div class="item-label">Errores en Instalacion</div>
+                <div class="item-label">Errores en Instalación</div>
                 <div class="item-value">{!! $renderValue($checklist->errores_instalacion) !!}</div>
                 <div class="item-obs">{!! $renderObs($checklist->errores_instalacion_obs) !!}</div>
             </div>
@@ -372,15 +398,15 @@
     
     <!-- SECCIÓN 3: ESTADO OBRA -->
     <div class="section">
-        <div class="section-title">ESTADO OBRA AL MOMENTO DE LA INSTALACION</div>
+        <div class="section-title">ESTADO OBRA AL MOMENTO DE LA INSTALACIÓN</div>
         <div class="items-grid">
             <div class="item-row">
-                <div class="item-label">Instalacion de Cielo</div>
+                <div class="item-label">Instalación de Cielo</div>
                 <div class="item-value">{!! $renderValue($checklist->instalacion_cielo) !!}</div>
                 <div class="item-obs">{!! $renderObs($checklist->instalacion_cielo_obs) !!}</div>
             </div>
             <div class="item-row">
-                <div class="item-label">Instalacion de Piso</div>
+                <div class="item-label">Instalación de Piso</div>
                 <div class="item-value">{!! $renderValue($checklist->instalacion_piso) !!}</div>
                 <div class="item-obs">{!! $renderObs($checklist->instalacion_piso_obs) !!}</div>
             </div>
@@ -390,7 +416,7 @@
                 <div class="item-obs">{!! $renderObs($checklist->remate_muros_obs) !!}</div>
             </div>
             <div class="item-row">
-                <div class="item-label">Nivelacion Piso</div>
+                <div class="item-label">Nivelación Piso</div>
                 <div class="item-value">{!! $renderValue($checklist->nivelacion_piso) !!}</div>
                 <div class="item-obs">{!! $renderObs($checklist->nivelacion_piso_obs) !!}</div>
             </div>
@@ -400,12 +426,12 @@
                 <div class="item-obs">{!! $renderObs($checklist->muros_plomo_obs) !!}</div>
             </div>
             <div class="item-row">
-                <div class="item-label">Instalacion Electrica</div>
+                <div class="item-label">Instalación Eléctrica</div>
                 <div class="item-value">{!! $renderValue($checklist->instalacion_electrica) !!}</div>
                 <div class="item-obs">{!! $renderObs($checklist->instalacion_electrica_obs) !!}</div>
             </div>
             <div class="item-row">
-                <div class="item-label">Instalacion Voz y Dato</div>
+                <div class="item-label">Instalación Voz y Dato</div>
                 <div class="item-value">{!! $renderValue($checklist->instalacion_voz_dato) !!}</div>
                 <div class="item-obs">{!! $renderObs($checklist->instalacion_voz_dato_obs) !!}</div>
             </div>
@@ -414,7 +440,7 @@
     
     <!-- SECCIÓN 4: INSPECCIÓN FINAL -->
     <div class="section">
-        <div class="section-title">INSPECCION FINAL</div>
+        <div class="section-title">INSPECCIÓN FINAL</div>
         <div class="items-grid">
             <div class="item-row">
                 <div class="item-label">Paneles Alineados</div>
@@ -422,7 +448,7 @@
                 <div class="item-obs">{!! $renderObs($checklist->paneles_alineados_obs) !!}</div>
             </div>
             <div class="item-row">
-                <div class="item-label">Nivelacion Cubiertas</div>
+                <div class="item-label">Nivelación Cubiertas</div>
                 <div class="item-value">{!! $renderValue($checklist->nivelacion_cubiertas) !!}</div>
                 <div class="item-obs">{!! $renderObs($checklist->nivelacion_cubiertas_obs) !!}</div>
             </div>
@@ -457,7 +483,7 @@
                 <div class="item-obs">{!! $renderObs($checklist->funcionamiento_mueble_obs) !!}</div>
             </div>
             <div class="item-row">
-                <div class="item-label">Puntos Electricos</div>
+                <div class="item-label">Puntos Eléctricos</div>
                 <div class="item-value">{!! $renderValue($checklist->puntos_electricos) !!}</div>
                 <div class="item-obs">{!! $renderObs($checklist->puntos_electricos_obs) !!}</div>
             </div>
