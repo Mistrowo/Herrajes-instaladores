@@ -288,7 +288,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Form oculto para eliminar -->
                                 <form id="delete-form-{{ $evidencia->id }}"
                                       action="{{ route('evidencias.destroy', $evidencia->id) }}"
                                       method="POST"
