@@ -31,23 +31,18 @@ class ChecklistController extends Controller
             $data = $this->checklistService->getByFolio($folio);
             
             $nota = NotaVtaActualiza::where('nv_folio', $folio)->first();
-            
-            $sucursales = collect();
-            if ($nota && $nota->nv_cliente) {
-                $sucursales = $this->sucursalService->buscarSucursalesPorNombreCliente($nota->nv_cliente);
-            }
+            $lugarDespacho = $nota?->nv_lugardespacho;
 
             Log::info('ChecklistController: Datos cargados', [
                 'asignacion_id' => $data['asignacion']->id,
                 'checklist_exists' => $data['checklist'] ? 'SI' : 'NO',
-                'sucursales_count' => $sucursales->count()
             ]);
 
             return view('checklist.index', [
                 'asignacion' => $data['asignacion'],
                 'checklist' => $data['checklist'],
                 'nota' => $nota,
-                'sucursales' => $sucursales,
+                'lugarDespacho' => $lugarDespacho,
             ]);
 
         } catch (\Exception $e) {

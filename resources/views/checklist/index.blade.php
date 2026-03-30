@@ -64,7 +64,7 @@
         <form id="checklistForm" action="{{ route('checklist.store', $asignacion->nota_venta) }}" method="POST" class="space-y-5">
             @csrf
 
-            {{-- SELECTOR DE SUCURSAL - DESTACADO --}}
+            {{-- LUGAR DE DESPACHO --}}
             <div class="bg-white rounded-xl shadow-md border-2 border-blue-200 p-6">
                 <div class="flex items-start gap-4">
                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -75,32 +75,13 @@
                     </div>
                     <div class="flex-1">
                         <label class="block text-lg font-bold text-gray-900 mb-2">
-                            Sucursal de Instalación <span class="text-red-500">*</span>
+                            Lugar de Despacho
                         </label>
-                        <p class="text-sm text-gray-600 mb-3">Selecciona la sucursal donde se realizó la instalación</p>
-                        
-                        @if($sucursales->count() > 0)
-                            <select name="sucursal_id" 
-                                    required
-                                    class="w-full px-4 py-3 text-base border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium">
-                                <option value="">Seleccionar sucursal...</option>
-                                @foreach($sucursales as $sucursal)
-                                    <option value="{{ $sucursal->id }}" 
-                                            {{ old('sucursal_id', $checklist?->sucursal_id) == $sucursal->id ? 'selected' : '' }}>
-                                        📍 {{ $sucursal->nombre }} - {{ $sucursal->comuna }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        @else
-                            <div class="px-4 py-3 bg-gray-100 border-2 border-gray-200 rounded-lg">
-                                <div class="flex items-center gap-2 text-gray-600">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    <span class="font-medium">No hay sucursales disponibles para este cliente</span>
-                                </div>
-                            </div>
-                        @endif
+                        <p class="text-sm text-gray-600 mb-3">Lugar de despacho asociado a la nota de venta</p>
+                        <input type="text"
+                               value="{{ $lugarDespacho ?? 'Sin datos' }}"
+                               readonly
+                               class="w-full px-4 py-3 text-base border-2 border-gray-200 bg-gray-50 rounded-lg text-gray-700 cursor-not-allowed font-medium">
                     </div>
                 </div>
             </div>
@@ -528,16 +509,6 @@ document.addEventListener('DOMContentLoaded', function() {
     submitButton.addEventListener('click', function(e) {
         e.preventDefault();
 
-        // Validar sucursal
-        const sucursalSelect = document.querySelector('select[name="sucursal_id"]');
-        if (sucursalSelect && !sucursalSelect.value) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Atención',
-                text: 'Debes seleccionar una sucursal antes de guardar'
-            });
-            return;
-        }
 
         Swal.fire({
             title: '¿Confirmar guardado?',
