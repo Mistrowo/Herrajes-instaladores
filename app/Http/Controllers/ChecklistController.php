@@ -109,14 +109,16 @@ class ChecklistController extends Controller
                     ->with('error', 'No se ha guardado ningún checklist aún');
             }
 
-            // Cargar relaciones necesarias
             $checklist = $data['checklist'];
-            $checklist->load(['instalador', 'sucursal']);
+            $checklist->load(['instalador']);
+
+            $nota = NotaVtaActualiza::where('nv_folio', $folio)->first();
 
             // Generar PDF
             $pdf = Pdf::loadView('checklist.pdf', [
                 'checklist' => $checklist,
                 'asignacion' => $data['asignacion'],
+                'lugarDespacho' => $nota?->nv_lugardespacho,
             ]);
 
             // Configurar PDF

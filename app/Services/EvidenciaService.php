@@ -23,60 +23,25 @@ class EvidenciaService
     /**
      * Obtener todas las evidencias de un folio con sucursales disponibles
      */
-    public function getEvidenciasByFolio(string $folio, ?int $sucursalId = null): array
+    public function getEvidenciasByFolio(string $folio): array
     {
         $notaVenta = NotaVtaActualiza::where('nv_folio', $folio)->firstOrFail();
-        
-        // Obtener asignación
-        $asignacion = Asigna::where('nota_venta', $folio)
-            ->with('sucursal')
-            ->first();
-        
-        // Obtener sucursales disponibles para este cliente
-        $sucursales = collect();
-        if ($notaVenta->nv_cliente) {
-            $sucursales = $this->sucursalService->buscarSucursalesPorNombreCliente($notaVenta->nv_cliente);
-        }
 
-        // Obtener evidencias (filtrar por sucursal si se especifica)
-        $query = EvidenciaFotografica::where('nota_venta', $folio)
-            ->with(['sucursal', 'instalador'])
+        $asignacion = Asigna::where('nota_venta', $folio)->first();
+
+        $evidencias = EvidenciaFotografica::where('nota_venta', $folio)
+            ->with('instalador')
             ->orderBy('fecha_subida', 'desc')
-            ->orderBy('created_at', 'desc');
-        
-        if ($sucursalId !== null) {
-            if ($sucursalId == 0) {
-                // Filtrar solo las que NO tienen sucursal
-                $query->whereNull('sucursal_id');
-            } else {
-                // Filtrar por sucursal específica
-                $query->where('sucursal_id', $sucursalId);
-            }
-        }
-        
-        $evidencias = $query->get();
-
-        // Agrupar evidencias por sucursal
-        $evidenciasPorSucursal = $evidencias->groupBy(function($evidencia) {
-            return $evidencia->sucursal_id ?? 0;
-        });
-
-        // Estadísticas
-        $totalEvidencias = $evidencias->count();
-        $conSucursal = $evidencias->filter(fn($e) => $e->sucursal_id !== null)->count();
-        $sinSucursal = $totalEvidencias - $conSucursal;
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return [
             'folio' => $folio,
             'notaVenta' => $notaVenta,
             'asignacion' => $asignacion,
             'evidencias' => $evidencias,
-            'evidenciasPorSucursal' => $evidenciasPorSucursal,
-            'sucursales' => $sucursales,
-            'sucursalActual' => $sucursalId,
-            'totalEvidencias' => $totalEvidencias,
-            'conSucursal' => $conSucursal,
-            'sinSucursal' => $sinSucursal,
+            'lugarDespacho' => $notaVenta->nv_lugardespacho,
+            'totalEvidencias' => $evidencias->count(),
         ];
     }
 
@@ -90,13 +55,6 @@ class EvidenciaService
         ?int $sucursalId = null,
         ?int $asignaId = null
     ): EvidenciaFotografica {
-        // Validar que la sucursal existe si se proporciona
-        if ($sucursalId) {
-            if (!$this->sucursalService->validarSucursalExiste($sucursalId)) {
-                throw new \Exception('La sucursal seleccionada no existe o no está activa.');
-            }
-        }
-
         // Generar nombre único (siempre jpg tras comprimir)
         $nombreArchivo = time() . '_' . uniqid() . '.jpg';
         $rutaRelativa = "evidencias/{$folio}/{$nombreArchivo}";
@@ -129,7 +87,6 @@ class EvidenciaService
         return EvidenciaFotografica::create([
             'asigna_id' => $asignaId,
             'nota_venta' => $folio,
-            'sucursal_id' => $sucursalId,
             'instalador_id' => $instaladorId,
             'imagen_path' => $path,
             'descripcion' => $descripcion,

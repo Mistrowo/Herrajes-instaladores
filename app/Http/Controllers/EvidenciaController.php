@@ -19,15 +19,7 @@ class EvidenciaController extends Controller
      */
     public function index(Request $request, $folio)
     {
-        $sucursalId = $request->get('sucursal_id');
-        
-        // Convertir "0" string a int 0 para filtrar los que no tienen sucursal
-        if ($sucursalId === '0') {
-            $sucursalId = 0;
-        }
-        
-        $data = $this->evidenciaService->getEvidenciasByFolio($folio, $sucursalId);
-        
+        $data = $this->evidenciaService->getEvidenciasByFolio($folio);
         return view('evidencia.index', $data);
     }
 
@@ -39,7 +31,6 @@ class EvidenciaController extends Controller
         $request->validate([
             'imagen' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
             'descripcion' => 'nullable|string|max:500',
-            'sucursal_id' => 'nullable|integer',
         ]);
 
         try {
@@ -47,7 +38,7 @@ class EvidenciaController extends Controller
                 $folio,
                 $request->file('imagen'),
                 $request->descripcion,
-                $request->sucursal_id,
+                null,
                 $request->asigna_id
             );
 

@@ -248,14 +248,8 @@
                 <td>{{ $checklist->telefono ?? 'N/A' }}</td>
             </tr>
             <tr>
-                <td><strong>Sucursal:</strong></td>
-                <td colspan="3">
-                    @if($checklist->sucursal)
-                        {{ $checklist->sucursal->nombre }} - {{ $checklist->sucursal->comuna }}
-                    @else
-                        Sin sucursal asignada
-                    @endif
-                </td>
+                <td><strong>Lugar de Despacho:</strong></td>
+                <td colspan="3">{{ $lugarDespacho ?? 'Sin datos' }}</td>
             </tr>
             <tr>
                 <td><strong>Autorizado por:</strong></td>
@@ -264,10 +258,9 @@
         </table>
     </div>
 
-    {{-- Badge de Sucursal --}}
-    @if($checklist->sucursal)
+    @if($lugarDespacho)
         <div class="sucursal-badge">
-            📍 Instalación en: {{ $checklist->sucursal->nombre }}
+            📍 Lugar de despacho: {{ $lugarDespacho }}
         </div>
     @endif
 
