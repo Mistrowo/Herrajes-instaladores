@@ -7,11 +7,10 @@
      x-data="herrajeForm({
         herrajeId: {{ $herraje->id }},
         nvFolio: {{ $herraje->nv_folio }},
-        sucursales: {{ Js::from($sucursales) }},
+        lugarDespacho: {{ Js::from($lugarDespacho ?? 'Sin lugar de despacho') }},
         initial: {
             estado: '{{ $herraje->estado }}',
             instalador_id: '{{ $herraje->instalador_id ?? '' }}',
-            sucursal_id: '{{ $herraje->sucursal_id ?? '' }}',
             observaciones: {{ Js::from($herraje->observaciones ?? '') }}
         }
      })"
@@ -62,19 +61,15 @@
 
             <div class="p-6">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                    <!-- Sucursal -->
+                    <!-- Lugar de Despacho -->
                     <div class="lg:col-span-3">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            📍 Sucursal <span class="text-red-500">*</span>
+                            📍 Lugar de Despacho
                         </label>
-                        <select x-model="form.sucursal_id"
-                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition"
-                                required>
-                            <option value="">Sin sucursal</option>
-                            <template x-for="suc in sucursales" :key="suc.id">
-                                <option :value="suc.id" x-text="`${suc.nombre} - ${suc.comuna}`"></option>
-                            </template>
-                        </select>
+                        <input type="text"
+                               :value="lugarDespacho"
+                               readonly
+                               class="w-full px-4 py-3 border-2 border-gray-200 bg-gray-50 rounded-lg text-gray-700 cursor-not-allowed">
                     </div>
 
                     <!-- Herraje -->
@@ -162,40 +157,27 @@
             </div>
         </div>
 
-        <!-- Lista Agrupada por Sucursal -->
+        <!-- Lista de Ítems -->
         <div class="space-y-4">
             <template x-for="grupo in itemsAgrupados" :key="grupo.sucursal_id || 0">
                 <div class="bg-white rounded-xl shadow-md border-2 border-gray-200 overflow-hidden">
                     <!-- Header del Grupo -->
-                    <div class="px-6 py-4 border-b-2 border-gray-200"
-                         :class="{
-                             'bg-gradient-to-r from-blue-50 to-indigo-50': grupo.sucursal_id,
-                             'bg-gradient-to-r from-gray-50 to-gray-100': !grupo.sucursal_id
-                         }">
+                    <div class="px-6 py-4 border-b-2 border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-lg flex items-center justify-center"
-                                     :class="{
-                                         'bg-blue-600': grupo.sucursal_id,
-                                         'bg-gray-500': !grupo.sucursal_id
-                                     }">
+                                <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
                                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-bold text-gray-900" x-text="grupo.sucursal ? grupo.sucursal.nombre : 'Sin Sucursal Asignada'"></h3>
-                                    <p class="text-sm text-gray-600" x-show="grupo.sucursal" x-text="grupo.sucursal ? grupo.sucursal.comuna : ''"></p>
+                                    <h3 class="text-lg font-bold text-gray-900" x-text="lugarDespacho"></h3>
+                                    <p class="text-sm text-gray-500">Lugar de despacho</p>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <div class="text-2xl font-bold"
-                                     :class="{
-                                         'text-blue-600': grupo.sucursal_id,
-                                         'text-gray-600': !grupo.sucursal_id
-                                     }"
-                                     x-text="grupo.total_items"></div>
+                                <div class="text-2xl font-bold text-blue-600" x-text="grupo.total_items"></div>
                                 <div class="text-xs text-gray-500 uppercase">Ítems</div>
                             </div>
                         </div>
@@ -234,33 +216,6 @@
 
                                     <!-- Acciones -->
                                     <div class="flex-shrink-0 flex items-center gap-2">
-                                        <!-- Cambiar Sucursal -->
-                                        <div class="relative" x-data="{ open: false }">
-                                            <button @click="open = !open"
-                                                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                    title="Cambiar sucursal">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                                                </svg>
-                                            </button>
-                                            <div x-show="open"
-                                                 @click.away="open = false"
-                                                 x-cloak
-                                                 class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border-2 border-gray-200 py-2 z-10">
-                                                <button @click="cambiarSucursalItem(item, null); open = false"
-                                                        class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 transition-colors"
-                                                        :class="{'bg-gray-100 font-semibold': !item.sucursal_id}">
-                                                    Sin sucursal
-                                                </button>
-                                                <template x-for="suc in sucursales" :key="suc.id">
-                                                    <button @click="cambiarSucursalItem(item, suc.id); open = false"
-                                                            class="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 transition-colors"
-                                                            :class="{'bg-blue-100 font-semibold': item.sucursal_id == suc.id}"
-                                                            x-text="`📍 ${suc.nombre} - ${suc.comuna}`"></button>
-                                                </template>
-                                            </div>
-                                        </div>
-
                                         <!-- Eliminar -->
                                         <button @click="eliminarItem(item)"
                                                 class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -302,18 +257,17 @@ function volverDashboard(folio) {
     window.location.href = '/dashboard';
 }
 
-function herrajeForm({ herrajeId, nvFolio, sucursales, initial }) {
+function herrajeForm({ herrajeId, nvFolio, lugarDespacho, initial }) {
     return {
         herrajeId,
         nvFolio,
-        sucursales,
+        lugarDespacho,
         estado: initial.estado || 'en_revision',
         instalador_id: initial.instalador_id || '',
-        sucursal_id: initial.sucursal_id || '',
         observaciones: initial.observaciones || '',
         itemsAgrupados: [],
         resumen: { items_count: 0 },
-        form: { sucursal_id: '', descripcion: '', cantidad: 1 },
+        form: { descripcion: '', cantidad: 1 },
         guardando: false,
         agregando: false,
 
@@ -377,7 +331,7 @@ function herrajeForm({ herrajeId, nvFolio, sucursales, initial }) {
                 const data = await res.json();
 
                 if (data.success) {
-                    this.form = { sucursal_id: '', descripcion: '', cantidad: 1 };
+                    this.form = { descripcion: '', cantidad: 1 };
                     await this.cargarItemsAgrupados();
                     Swal.fire({
                         icon: 'success',
@@ -435,45 +389,6 @@ function herrajeForm({ herrajeId, nvFolio, sucursales, initial }) {
                     icon: 'error',
                     title: 'Error',
                     text: 'No se pudo actualizar'
-                });
-            }
-        },
-
-        async cambiarSucursalItem(item, nuevaSucursalId) {
-            try {
-                const res = await fetch(`/dashboard/herrajes/api/${this.herrajeId}/items/${item.id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        sucursal_id: nuevaSucursalId,
-                        descripcion: item.descripcion,
-                        cantidad: item.cantidad
-                    })
-                });
-
-                const data = await res.json();
-
-                if (data.success) {
-                    await this.cargarItemsAgrupados();
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Sucursal actualizada',
-                        timer: 1000,
-                        showConfirmButton: false
-                    });
-                } else {
-                    throw new Error(data.message);
-                }
-            } catch (e) {
-                console.error('Error:', e);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'No se pudo cambiar la sucursal'
                 });
             }
         },

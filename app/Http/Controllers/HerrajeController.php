@@ -57,11 +57,8 @@ class HerrajeController extends Controller
             // Cargar relaciones
             $herraje->load(['items', 'instalador', 'asigna', 'sucursal']);
 
-            // Obtener sucursales disponibles para el cliente
-            $sucursales = collect();
-            if ($nota && $nota->nv_cliente) {
-                $sucursales = $this->sucursalService->buscarSucursalesPorNombreCliente($nota->nv_cliente);
-            }
+            // Lugar de despacho desde la nota de venta
+            $lugarDespacho = $nota ? $nota->nv_lugardespacho : null;
 
             // Instaladores activos
             $instaladores = Instalador::activo()
@@ -70,7 +67,6 @@ class HerrajeController extends Controller
 
             Log::info('Datos cargados exitosamente', [
                 'herraje_id' => $herraje->id,
-                'sucursales_count' => $sucursales->count(),
                 'instaladores_count' => $instaladores->count(),
             ]);
 
@@ -79,7 +75,7 @@ class HerrajeController extends Controller
                 'nota',
                 'asigna',
                 'instaladores',
-                'sucursales'
+                'lugarDespacho'
             ));
         } catch (\Exception $e) {
             Log::error('Error en showByFolio', [
