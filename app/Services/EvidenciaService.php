@@ -8,6 +8,8 @@ use App\Models\Asigna;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class EvidenciaService
 {
@@ -95,11 +97,24 @@ class EvidenciaService
             }
         }
 
-        // Generar nombre único para la imagen
-        $nombreArchivo = time() . '_' . uniqid() . '.' . $imagen->getClientOriginalExtension();
-        
-        // Guardar en storage/app/public/evidencias/{folio}/
-        $path = $imagen->storeAs("evidencias/{$folio}", $nombreArchivo, 'public');
+        // Generar nombre único (siempre jpg tras comprimir)
+        $nombreArchivo = time() . '_' . uniqid() . '.jpg';
+        $rutaRelativa = "evidencias/{$folio}/{$nombreArchivo}";
+        $rutaAbsoluta = storage_path("app/public/{$rutaRelativa}");
+
+        // Crear directorio si no existe
+        if (!file_exists(dirname($rutaAbsoluta))) {
+            mkdir(dirname($rutaAbsoluta), 0755, true);
+        }
+
+        // Comprimir y redimensionar (max 1200px ancho, calidad 75%)
+        $manager = new ImageManager(new Driver());
+        $manager->read($imagen->getRealPath())
+            ->scaleDown(width: 1200)
+            ->toJpeg(quality: 75)
+            ->save($rutaAbsoluta);
+
+        $path = $rutaRelativa;
 
         // Obtener instalador actual
         $instaladorId = Auth::check() ? Auth::id() : null;
