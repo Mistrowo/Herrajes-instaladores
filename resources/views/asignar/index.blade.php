@@ -333,7 +333,7 @@
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">NV</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sucursal</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lugar de Despacho</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Instaladores</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
@@ -350,14 +350,9 @@
                                 </div>
                             </td>
                             <td class="px-4 py-3">
-                                @if($asig->sucursal)
-                                    <div class="text-sm">
-                                        <div class="font-medium text-gray-900">{{ $asig->sucursal->nombre }}</div>
-                                        <div class="text-gray-500 text-xs">{{ $asig->sucursal->comuna }}</div>
-                                    </div>
-                                @else
-                                    <span class="text-sm text-gray-400">Sin sucursal</span>
-                                @endif
+                                <span class="text-sm text-gray-700">
+                                    {{ $asig->notaVenta?->nv_lugardespacho ?? '-' }}
+                                </span>
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-1">
