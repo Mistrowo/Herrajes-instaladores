@@ -126,36 +126,12 @@
               </div>
 
               <div>
-                  <label class="block text-sm font-bold text-gray-700 mb-2">
-                      SUCURSAL
-                      <span x-show="cargandoSucursales" class="text-xs text-blue-600 ml-2">
-                          <svg class="animate-spin inline h-3 w-3" fill="none" viewBox="0 0 24 24">
-                              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                      </span>
-                  </label>
-                  <div class="relative">
-                      <select x-model="sucursalSeleccionada"
-                              :disabled="sucursalesDisponibles.length === 0"
-                              @change="cambiarSucursal()"
-                              :class="sucursalesDisponibles.length === 0 ? 'bg-gray-100 cursor-not-allowed' : 'bg-white cursor-pointer'"
-                              class="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none">
-                          <option value="">Seleccionar sucursal...</option>
-                          <template x-for="sucursal in sucursalesDisponibles" :key="sucursal.id">
-                              <option :value="sucursal.id" x-text="`${sucursal.nombre} - ${sucursal.comuna}`"></option>
-                          </template>
-                      </select>
-                      <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                      </svg>
-                  </div>
-
-                  <!-- Info de sucursal seleccionada -->
-                  <div x-show="sucursalInfo.direccion" class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                      <p class="text-gray-700"><strong>Dirección:</strong> <span x-text="sucursalInfo.direccion"></span></p>
-                      <p class="text-gray-700"><strong>Comuna:</strong> <span x-text="sucursalInfo.comuna"></span></p>
-                  </div>
+                  <label class="block text-sm font-bold text-gray-700 mb-2">LUGAR DE DESPACHO</label>
+                  <input type="text"
+                         :value="notaSeleccionada.lugar_despacho || 'Sin datos'"
+                         readonly
+                         placeholder="Sin datos"
+                         class="w-full px-3 py-2 bg-gray-100 border-2 border-gray-200 rounded-lg text-gray-900 cursor-not-allowed">
               </div>
           </div>
 
@@ -346,14 +322,10 @@ function dashboardData() {
     return {
         showModal: false,
         cargando: false,
-        cargandoSucursales: false,
         busqueda: '',
         notasVenta: [],
         paginaActual: 1,
         totalPaginas: 1,
-        sucursalesDisponibles: [],
-        sucursalSeleccionada: '',
-        sucursalInfo: { direccion: '', comuna: '' },
         notaSeleccionada: {
             folio: '',
             folio_formateado: '',
@@ -376,59 +348,9 @@ function dashboardData() {
             if (folioGuardado) {
                 this.cargarNotaPorFolio(folioGuardado);
                 sessionStorage.removeItem('dashboard_folio');
-            } else {
-                this.cargarNotas();
             }
         },
 
-        async cargarSucursales(nombreCliente) {
-            if (!nombreCliente) {
-                this.sucursalesDisponibles = [];
-                return;
-            }
-
-            this.cargandoSucursales = true;
-            try {
-                const response = await fetch(`/dashboard/sucursales?nombre_cliente=${encodeURIComponent(nombreCliente)}`);
-                const data = await response.json();
-
-                if (data.success && data.sucursales.length > 0) {
-                    this.sucursalesDisponibles = data.sucursales;
-
-                    if (this.asignacion.sucursal) {
-                        this.sucursalSeleccionada = this.asignacion.sucursal.id;
-                        this.sucursalInfo = {
-                            direccion: this.asignacion.sucursal.direccion_completa,
-                            comuna: this.asignacion.sucursal.comuna
-                        };
-                    }
-                } else {
-                    this.sucursalesDisponibles = [];
-                    console.log('No se encontraron sucursales para', nombreCliente);
-                }
-            } catch (error) {
-                console.error('Error al cargar sucursales:', error);
-                this.sucursalesDisponibles = [];
-            } finally {
-                this.cargandoSucursales = false;
-            }
-        },
-
-        cambiarSucursal() {
-            if (!this.sucursalSeleccionada) {
-                this.sucursalInfo = { direccion: '', comuna: '' };
-                return;
-            }
-
-            const sucursal = this.sucursalesDisponibles.find(s => s.id == this.sucursalSeleccionada);
-            if (sucursal) {
-                this.sucursalInfo = {
-                    direccion: sucursal.direccion_completa,
-                    comuna: sucursal.comuna
-                };
-                console.log('Sucursal seleccionada:', sucursal.nombre);
-            }
-        },
 
         async cargarNotaPorFolio(folio) {
             this.cargando = true;
@@ -444,8 +366,6 @@ function dashboardData() {
                     } else {
                         this.asignacion = { fecha_asigna: '', observaciones: '', sucursal: null };
                     }
-
-                    await this.cargarSucursales(this.notaSeleccionada.cliente);
 
                     showAlert('success', 'Nota de venta cargada exitosamente');
                 } else {
@@ -515,8 +435,6 @@ function dashboardData() {
                     } else {
                         this.asignacion = { fecha_asigna: '', observaciones: '', sucursal: null };
                     }
-
-                    await this.cargarSucursales(this.notaSeleccionada.cliente);
 
                     this.cerrarModal();
                     showAlert('success', 'Nota de venta cargada exitosamente');

@@ -161,10 +161,10 @@ class AsignarController extends Controller
             $validatedData = $request->validate([
                 'nota_venta' => 'required|string',
                 'sucursal_id' => 'nullable|integer',
-                'asignado1' => 'nullable|exists:instaladores,id',
-                'asignado2' => 'nullable|exists:instaladores,id',
-                'asignado3' => 'nullable|exists:instaladores,id',
-                'asignado4' => 'nullable|exists:instaladores,id',
+                'asignado1' => 'nullable|exists:sh_instalador,id',
+                'asignado2' => 'nullable|exists:sh_instalador,id',
+                'asignado3' => 'nullable|exists:sh_instalador,id',
+                'asignado4' => 'nullable|exists:sh_instalador,id',
                 'fecha_asigna' => 'required|date',
                 'observaciones' => 'nullable|string',
             ]);
@@ -224,10 +224,10 @@ public function show($id)
             $validatedData = $request->validate([
                 'nota_venta' => 'required|string',
                 'sucursal_id' => 'nullable|integer',
-                'asignado1' => 'nullable|exists:instaladores,id',
-                'asignado2' => 'nullable|exists:instaladores,id',
-                'asignado3' => 'nullable|exists:instaladores,id',
-                'asignado4' => 'nullable|exists:instaladores,id',
+                'asignado1' => 'nullable|exists:sh_instalador,id',
+                'asignado2' => 'nullable|exists:sh_instalador,id',
+                'asignado3' => 'nullable|exists:sh_instalador,id',
+                'asignado4' => 'nullable|exists:sh_instalador,id',
                 'fecha_asigna' => 'required|date',
                 'observaciones' => 'nullable|string',
             ]);

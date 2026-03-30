@@ -26,12 +26,28 @@ class NotaVtaActualiza extends Model
         'nv_estado',
         'nv_femision',
         'nv_fentrega',
+        'nv_lugardespacho',
     ];
 
     protected $casts = [
         'nv_femision' => 'date',
         'nv_fentrega' => 'date',
     ];
+
+    /**
+     * Scope para buscar por folio o cliente
+     */
+    public function scopeBuscar($query, $termino)
+    {
+        return $query->where(function ($q) use ($termino) {
+            if (is_numeric($termino)) {
+                $q->where('nv_folio', $termino);
+            } else {
+                $q->where('nv_cliente', 'like', '%' . $termino . '%')
+                  ->orWhere('nv_descripcion', 'like', '%' . $termino . '%');
+            }
+        });
+    }
 
     /**
      * Scope para filtrar por folio

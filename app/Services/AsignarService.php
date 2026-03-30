@@ -103,7 +103,7 @@ class AsignarService
             'asignado2' => $datos['asignado2'] ?? null,
             'asignado3' => $datos['asignado3'] ?? null,
             'asignado4' => $datos['asignado4'] ?? null,
-            'solicita' => $datos['solicita'] ?? null,
+            'solicita' => $datos['solicita'] ?? auth()->user()?->nombre ?? auth()->user()?->name ?? 'Admin',
             'estado' => 'pendiente',
             'observaciones' => $datos['observaciones'] ?? null,
         ]);

@@ -233,6 +233,7 @@ class DashboardController extends Controller
                     'comuna' => $notaVenta->nv_comuna,
                     'ciudad' => $notaVenta->nv_ciudad,
                     'telefono' => $notaVenta->nv_telefono,
+                    'lugar_despacho' => $notaVenta->nv_lugardespacho,
                 ],
                 'asignacion' => $dataAsignacion
             ]

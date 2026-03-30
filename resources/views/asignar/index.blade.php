@@ -123,13 +123,14 @@
                                                 data-asignado4="{{ $asignacion->asignado4 ?? '' }}"
                                                 data-sucursal-id="{{ $asignacion->sucursal_id ?? '' }}"
                                                 data-observaciones="{{ $asignacion->observaciones ?? '' }}"
-                                                data-cliente="{{ $nv->nv_cliente }}">
+                                                data-cliente="{{ $nv->nv_cliente }}"
+                                                data-lugar-despacho="{{ $nv->nv_lugardespacho ?? '' }}">
                                                 Editar
                                             </button>
                                         </div>
                                     </div>
                                 @else
-                                    <button onclick="asignarInstaladores('{{ $nv->nv_folio }}', '{{ $nv->nv_cliente }}')" 
+                                    <button onclick="asignarInstaladores('{{ $nv->nv_folio }}', '{{ $nv->nv_cliente }}', '{{ addslashes($nv->nv_lugardespacho ?? '') }}')"
                                             class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -402,7 +403,8 @@
                                         data-asignado4="{{ $asig->asignado4 ?? '' }}"
                                         data-sucursal-id="{{ $asig->sucursal_id ?? '' }}"
                                         data-observaciones="{{ $asig->observaciones ?? '' }}"
-                                        data-cliente="{{ $asig->notaVenta ? $asig->notaVenta->nv_cliente : '' }}">
+                                        data-cliente="{{ $asig->notaVenta ? $asig->notaVenta->nv_cliente : '' }}"
+                                        data-lugar-despacho="{{ $asig->notaVenta ? ($asig->notaVenta->nv_lugardespacho ?? '') : '' }}">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
@@ -473,38 +475,17 @@
             <input type="hidden" id="cliente_nombre" value="">
             
             <div class="space-y-6">
-                <!-- Sucursal -->
+                <!-- Lugar de Despacho -->
                 <div class="bg-gray-50 rounded-lg p-4">
                     <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                         <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
-                        Sucursal del Cliente
-                        <span id="loading-sucursales" class="hidden ml-2 text-xs text-blue-600">
-                            <svg class="animate-spin inline h-4 w-4" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Cargando...
-                        </span>
+                        Lugar de Despacho
                     </label>
-                    <select name="sucursal_id" id="sucursal_select" class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Seleccione primero la nota de venta...</option>
-                    </select>
-                    <div id="sucursal-info" class="mt-3 hidden">
-                        <div class="bg-blue-50 border-l-4 border-blue-500 rounded p-3">
-                            <div class="flex items-start gap-2">
-                                <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <div class="flex-1">
-                                    <p class="text-xs font-medium text-blue-900">Información de la Sucursal</p>
-                                    <p class="text-xs text-blue-700 mt-1"><strong>Dirección:</strong> <span id="sucursal-direccion"></span></p>
-                                    <p class="text-xs text-blue-700"><strong>Comuna:</strong> <span id="sucursal-comuna"></span></p>
-                                </div>
-                            </div>
-                        </div>
+                    <div id="lugar-despacho-display" class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-100 text-gray-500 text-sm">
+                        Seleccione primero la nota de venta...
                     </div>
                 </div>
 
@@ -632,18 +613,18 @@
                            class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg bg-gray-100">
                 </div>
 
-                <!-- Sucursal Edit -->
+                <!-- Lugar de Despacho Edit -->
                 <div class="bg-gray-50 rounded-lg p-4">
                     <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
                         <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
-                        Sucursal
+                        Lugar de Despacho
                     </label>
-                    <select name="sucursal_id" id="edit_sucursal_id" class="w-full px-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-                        <option value="">Sin sucursal</option>
-                    </select>
+                    <div id="edit-lugar-despacho-display" class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-100 text-gray-700 text-sm">
+                        -
+                    </div>
                 </div>
 
                 <!-- Fecha -->
@@ -796,71 +777,23 @@ if (urlParams.get('tab') === 'asignaciones') {
     cambiarTab('asignaciones');
 }
 
-// Modal Asignar con carga de sucursales
-function asignarInstaladores(folio, cliente) {
+// Modal Asignar
+function asignarInstaladores(folio, cliente, lugarDespacho) {
     document.getElementById('modalAsignar').classList.remove('hidden');
     document.getElementById('input_nota_venta').value = folio;
     document.getElementById('cliente_nombre').value = cliente;
     document.getElementById('modal-subtitle').textContent = `NV: ${folio} - Cliente: ${cliente}`;
-    
-    // Cargar sucursales basado en el nombre del cliente
-    cargarSucursales(cliente);
-}
 
-function cargarSucursales(nombreCliente) {
-    const selectSucursal = document.getElementById('sucursal_select');
-    const loadingIndicator = document.getElementById('loading-sucursales');
-    
-    if (!nombreCliente) {
-        selectSucursal.innerHTML = '<option value="">No se pudo obtener el nombre del cliente</option>';
-        return;
-    }
-    
-    selectSucursal.innerHTML = '<option value="">Cargando sucursales...</option>';
-    selectSucursal.disabled = true;
-    loadingIndicator.classList.remove('hidden');
-    
-    fetch(`/asignar/sucursales?nombre_cliente=${encodeURIComponent(nombreCliente)}`)
-        .then(response => response.json())
-        .then(data => {
-            loadingIndicator.classList.add('hidden');
-            selectSucursal.disabled = false;
-            
-            if (data.success && data.sucursales.length > 0) {
-                selectSucursal.innerHTML = '<option value="">Seleccionar sucursal...</option>';
-                data.sucursales.forEach(sucursal => {
-                    const option = document.createElement('option');
-                    option.value = sucursal.id;
-                    option.textContent = `${sucursal.nombre} - ${sucursal.comuna}`;
-                    option.dataset.direccion = sucursal.direccion_completa;
-                    option.dataset.comuna = sucursal.comuna;
-                    selectSucursal.appendChild(option);
-                });
-            } else {
-                selectSucursal.innerHTML = '<option value="">No se encontraron sucursales para este cliente</option>';
-            }
-        })
-        .catch(error => {
-            console.error('Error al cargar sucursales:', error);
-            loadingIndicator.classList.add('hidden');
-            selectSucursal.disabled = false;
-            selectSucursal.innerHTML = '<option value="">Error al cargar sucursales</option>';
-        });
-}
-
-// Mostrar info de sucursal al seleccionar
-document.getElementById('sucursal_select').addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    const infoDiv = document.getElementById('sucursal-info');
-    
-    if (this.value) {
-        document.getElementById('sucursal-direccion').textContent = selectedOption.dataset.direccion || '-';
-        document.getElementById('sucursal-comuna').textContent = selectedOption.dataset.comuna || '-';
-        infoDiv.classList.remove('hidden');
+    const display = document.getElementById('lugar-despacho-display');
+    if (lugarDespacho) {
+        display.textContent = lugarDespacho;
+        display.classList.remove('text-gray-500');
+        display.classList.add('text-gray-800');
     } else {
-        infoDiv.classList.add('hidden');
+        display.textContent = 'Sin lugar de despacho registrado';
+        display.classList.add('text-gray-500');
     }
-});
+}
 
 function cerrarModalAsignar() {
     document.getElementById('modalAsignar').classList.add('hidden');
@@ -882,16 +815,8 @@ function editarAsignacionConDatos(button) {
     document.getElementById('edit_asignado4').value = data.asignado4 || '';
     document.getElementById('edit_observaciones').value = data.observaciones || '';
     
-    // Cargar sucursales para edición si tenemos el nombre del cliente
-    if (data.cliente) {
-        cargarSucursalesParaEdicion(data.cliente, data.sucursalId);
-    } else {
-        const select = document.getElementById('edit_sucursal_id');
-        select.innerHTML = '<option value="">Sin sucursal</option>';
-        if (data.sucursalId) {
-            select.innerHTML += `<option value="${data.sucursalId}" selected>Sucursal ID: ${data.sucursalId}</option>`;
-        }
-    }
+    const display = document.getElementById('edit-lugar-despacho-display');
+    display.textContent = data.lugarDespacho || 'Sin lugar de despacho registrado';
 }
 
 // Event listeners para botones de editar
@@ -911,32 +836,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function cargarSucursalesParaEdicion(nombreCliente, sucursalActual) {
-    const select = document.getElementById('edit_sucursal_id');
-    select.innerHTML = '<option value="">Cargando...</option>';
-    
-    fetch(`/asignar/sucursales?nombre_cliente=${encodeURIComponent(nombreCliente)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.sucursales.length > 0) {
-                select.innerHTML = '<option value="">Sin sucursal</option>';
-                data.sucursales.forEach(sucursal => {
-                    const option = document.createElement('option');
-                    option.value = sucursal.id;
-                    option.textContent = `${sucursal.nombre} - ${sucursal.comuna}`;
-                    if (sucursal.id == sucursalActual) {
-                        option.selected = true;
-                    }
-                    select.appendChild(option);
-                });
-            } else {
-                select.innerHTML = '<option value="">Sin sucursal</option>';
-            }
-        })
-        .catch(error => {
-            console.error('Error al cargar sucursales para edición:', error);
-            select.innerHTML = '<option value="">Sin sucursal</option>';
-        });
+function cargarSucursalesParaEdicion() {
+    // Función eliminada - lugar de despacho viene directo de Softland
 }
 
 function cerrarModalEditar() {
