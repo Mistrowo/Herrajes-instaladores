@@ -6,6 +6,7 @@ use App\Services\AsignarService;
 use App\Services\SucursalService; // ⭐ AGREGAR
 use App\Models\NotaVtaActualiza;
 use App\Models\Asigna;
+use App\Models\LugarDespacho;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
@@ -140,6 +141,33 @@ class DashboardController extends Controller
     }
 
     /**
+     * Obtener lugares de despacho de un cliente (AJAX)
+     * Prioriza codaux (RUT), cae a nombre si aún no está disponible
+     */
+    public function obtenerLugaresDespacho(Request $request): JsonResponse
+    {
+        $codAux  = trim($request->input('codaux', ''));
+        $cliente = trim($request->input('cliente', ''));
+
+        if (empty($codAux) && empty($cliente)) {
+            return response()->json(['success' => false, 'lugares' => []], 400);
+        }
+
+        $lugares = !empty($codAux)
+            ? LugarDespacho::porCodAux($codAux)
+            : LugarDespacho::porNombreCliente($cliente);
+
+        return response()->json([
+            'success' => true,
+            'lugares' => $lugares->map(fn($l) => [
+                'codigo'    => $l->cw_codldespacho,
+                'direccion' => $l->cw_nomldespacho,
+                'label'     => $l->cw_codldespacho . ' – ' . $l->cw_nomldespacho,
+            ]),
+        ]);
+    }
+
+    /**
      * Obtener detalles de una nota de venta (AJAX)
      */
     public function obtenerDetallesNV(Request $request): JsonResponse
@@ -234,6 +262,7 @@ class DashboardController extends Controller
                     'ciudad' => $notaVenta->nv_ciudad,
                     'telefono' => $notaVenta->nv_telefono,
                     'lugar_despacho' => $notaVenta->nv_lugardespacho,
+                    'codaux' => $notaVenta->nv_codaux,
                 ],
                 'asignacion' => $dataAsignacion
             ]

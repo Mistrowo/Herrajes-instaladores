@@ -9,8 +9,8 @@ Route::middleware(['auth'])
 
     // Vista FFT
     Route::get('/fft/{folio}', function ($folio, DocumentoExternoService $service) {
-        $archivos = $service->obtenerFft($folio);
-        
+        $archivos = $service->obtenerFft($folio, request('lugar_despacho'));
+
         return view('fft.index', [
             'folio' => $folio,
             'archivos' => $archivos,
@@ -20,8 +20,8 @@ Route::middleware(['auth'])
 
     // Vista OC
     Route::get('/oc/{folio}', function ($folio, DocumentoExternoService $service) {
-        $archivos = $service->obtenerOc($folio);
-        
+        $archivos = $service->obtenerOc($folio, request('lugar_despacho'));
+
         return view('oc.index', [
             'folio' => $folio,
             'archivos' => $archivos,

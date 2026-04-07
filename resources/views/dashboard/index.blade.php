@@ -127,11 +127,22 @@
 
               <div>
                   <label class="block text-sm font-bold text-gray-700 mb-2">LUGAR DE DESPACHO</label>
-                  <input type="text"
-                         :value="notaSeleccionada.lugar_despacho || 'Sin datos'"
-                         readonly
-                         placeholder="Sin datos"
-                         class="w-full px-3 py-2 bg-gray-100 border-2 border-gray-200 rounded-lg text-gray-900 cursor-not-allowed">
+                  <template x-if="lugaresDespacho.length > 0">
+                      <select x-model="lugarSeleccionado"
+                              class="w-full px-3 py-2 bg-white border-2 border-blue-400 rounded-lg text-gray-900">
+                          <option value="">— Seleccionar —</option>
+                          <template x-for="l in lugaresDespacho" :key="l.codigo">
+                              <option :value="l.codigo" x-text="l.label"></option>
+                          </template>
+                      </select>
+                  </template>
+                  <template x-if="lugaresDespacho.length === 0">
+                      <input type="text"
+                             :value="notaSeleccionada.lugar_despacho || 'Sin datos'"
+                             readonly
+                             placeholder="Sin datos"
+                             class="w-full px-3 py-2 bg-gray-100 border-2 border-gray-200 rounded-lg text-gray-900 cursor-not-allowed">
+                  </template>
               </div>
           </div>
 
@@ -336,6 +347,8 @@ function dashboardData() {
             fecha_emision: '',
             fecha_entrega: ''
         },
+        lugaresDespacho: [],
+        lugarSeleccionado: '',
         asignacion: {
             fecha_asigna: '',
             observaciones: '',
@@ -360,6 +373,7 @@ function dashboardData() {
 
                 if (data.success) {
                     this.notaSeleccionada = data.data.nota_venta;
+                    this.cargarLugaresDespacho(data.data.nota_venta.cliente, data.data.nota_venta.codaux);
 
                     if (data.data.asignacion) {
                         this.asignacion = data.data.asignacion;
@@ -429,6 +443,7 @@ function dashboardData() {
 
                 if (data.success) {
                     this.notaSeleccionada = data.data.nota_venta;
+                    this.cargarLugaresDespacho(data.data.nota_venta.cliente, data.data.nota_venta.codaux);
 
                     if (data.data.asignacion) {
                         this.asignacion = data.data.asignacion;
@@ -449,16 +464,39 @@ function dashboardData() {
             }
         },
 
+        async cargarLugaresDespacho(cliente, codaux = null) {
+            this.lugaresDespacho = [];
+            this.lugarSeleccionado = '';
+            if (!cliente && !codaux) return;
+            try {
+                const param = codaux
+                    ? `codaux=${encodeURIComponent(codaux)}`
+                    : `cliente=${encodeURIComponent(cliente)}`;
+                const response = await fetch(`/dashboard/lugares-despacho?${param}`);
+                const data = await response.json();
+                if (data.success) {
+                    this.lugaresDespacho = data.lugares;
+                    if (data.lugares.length === 1) {
+                        this.lugarSeleccionado = data.lugares[0].codigo;
+                    }
+                }
+            } catch (error) {
+                console.error('Error al cargar lugares de despacho', error);
+            }
+        },
+
         abrirPlano() {
             if (!this.notaSeleccionada.folio) return;
-            const url = `dashboard/fft/${this.notaSeleccionada.folio}`;
+            const lugar = this.lugarSeleccionado || this.notaSeleccionada.lugar_despacho;
+            const url = `dashboard/fft/${this.notaSeleccionada.folio}` + (lugar ? `?lugar_despacho=${encodeURIComponent(lugar)}` : '');
             window.open(url, '_blank');
             showAlert('info', `Abriendo FFT: NV-${this.notaSeleccionada.folio_formateado}`);
         },
 
         abrirOC() {
             if (!this.notaSeleccionada.folio) return;
-            const url = `dashboard/oc/${this.notaSeleccionada.folio}`;
+            const lugar = this.lugarSeleccionado || this.notaSeleccionada.lugar_despacho;
+            const url = `dashboard/oc/${this.notaSeleccionada.folio}` + (lugar ? `?lugar_despacho=${encodeURIComponent(lugar)}` : '');
             window.open(url, '_blank');
             showAlert('success', `Abriendo OC: NV-${this.notaSeleccionada.folio_formateado}`);
         },

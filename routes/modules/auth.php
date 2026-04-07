@@ -38,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/detalles-nv', [App\Http\Controllers\DashboardController::class, 'obtenerDetallesNV'])->name('dashboard.detalles-nv');
     
     Route::get('/dashboard/sucursales', [App\Http\Controllers\DashboardController::class, 'obtenerSucursales'])->name('dashboard.sucursales');
+    Route::get('/dashboard/lugares-despacho', [App\Http\Controllers\DashboardController::class, 'obtenerLugaresDespacho'])->name('dashboard.lugares-despacho');
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout.get');
