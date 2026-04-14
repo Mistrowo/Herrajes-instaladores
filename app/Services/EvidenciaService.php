@@ -27,7 +27,7 @@ class EvidenciaService
     {
         $notaVenta = NotaVtaActualiza::where('nv_folio', $folio)->firstOrFail();
 
-        $asignacion = Asigna::where('nota_venta', $folio)->first();
+        $asignacion = Asigna::where('nota_venta', $folio)->with('sucursal')->first();
 
         $evidencias = EvidenciaFotografica::where('nota_venta', $folio)
             ->with('instalador')
@@ -40,7 +40,7 @@ class EvidenciaService
             'notaVenta' => $notaVenta,
             'asignacion' => $asignacion,
             'evidencias' => $evidencias,
-            'lugarDespacho' => $notaVenta->nv_lugardespacho,
+            'lugarDespacho' => $asignacion?->sucursal?->nombre ?? $notaVenta->nv_lugardespacho,
             'totalEvidencias' => $evidencias->count(),
         ];
     }
@@ -55,9 +55,22 @@ class EvidenciaService
         ?int $sucursalId = null,
         ?int $asignaId = null
     ): EvidenciaFotografica {
+        // Obtener instalador actual
+        $instaladorId = Auth::check() ? Auth::id() : null;
+
+        // Obtener asigna_id y sucursal_id si no se proporcionan
+        if (!$asignaId) {
+            $asignacion = Asigna::where('nota_venta', $folio)->first();
+            $asignaId = $asignacion?->id;
+            $sucursalId ??= $asignacion?->sucursal_id;
+        }
+
         // Generar nombre único (siempre jpg tras comprimir)
         $nombreArchivo = time() . '_' . uniqid() . '.jpg';
-        $rutaRelativa = "evidencias/{$folio}/{$nombreArchivo}";
+        $carpeta = $sucursalId
+            ? "evidencias/{$folio}/{$sucursalId}"
+            : "evidencias/{$folio}";
+        $rutaRelativa = "{$carpeta}/{$nombreArchivo}";
         $rutaAbsoluta = storage_path("app/public/{$rutaRelativa}");
 
         // Crear directorio si no existe
@@ -74,22 +87,14 @@ class EvidenciaService
 
         $path = $rutaRelativa;
 
-        // Obtener instalador actual
-        $instaladorId = Auth::check() ? Auth::id() : null;
-
-        // Obtener asigna_id si no se proporciona
-        if (!$asignaId) {
-            $asignacion = Asigna::where('nota_venta', $folio)->first();
-            $asignaId = $asignacion ? $asignacion->id : null;
-        }
-
         // Crear registro
         return EvidenciaFotografica::create([
-            'asigna_id' => $asignaId,
-            'nota_venta' => $folio,
-            'instalador_id' => $instaladorId,
-            'imagen_path' => $path,
-            'descripcion' => $descripcion,
+            'asigna_id'    => $asignaId,
+            'nota_venta'   => $folio,
+            'sucursal_id'  => $sucursalId,
+            'instalador_id'=> $instaladorId,
+            'imagen_path'  => $path,
+            'descripcion'  => $descripcion,
             'fecha_subida' => now(),
         ]);
     }

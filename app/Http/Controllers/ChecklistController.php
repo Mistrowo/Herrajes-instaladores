@@ -31,7 +31,8 @@ class ChecklistController extends Controller
             $data = $this->checklistService->getByFolio($folio);
             
             $nota = NotaVtaActualiza::where('nv_folio', $folio)->first();
-            $lugarDespacho = $nota?->nv_lugardespacho;
+            $lugarDespacho = $data['asignacion']->sucursal?->nombre
+                ?? $nota?->nv_lugardespacho;
 
             Log::info('ChecklistController: Datos cargados', [
                 'asignacion_id' => $data['asignacion']->id,
