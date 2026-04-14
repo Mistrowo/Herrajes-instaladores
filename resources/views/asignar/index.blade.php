@@ -130,7 +130,7 @@
                                         </div>
                                     </div>
                                 @else
-                                    <button onclick="asignarInstaladores('{{ $nv->nv_folio }}', '{{ $nv->nv_cliente }}', '{{ addslashes($nv->nv_lugardespacho ?? '') }}')"
+                                    <button onclick="asignarInstaladores('{{ $nv->nv_folio }}', '{{ $nv->nv_cliente }}')"
                                             class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -467,8 +467,9 @@
             @csrf
             
             <input type="hidden" name="nota_venta" id="input_nota_venta">
+            <input type="hidden" name="sucursal_id" id="input_sucursal_id">
             <input type="hidden" id="cliente_nombre" value="">
-            
+
             <div class="space-y-6">
                 <!-- Lugar de Despacho -->
                 <div class="bg-gray-50 rounded-lg p-4">
@@ -479,9 +480,12 @@
                         </svg>
                         Lugar de Despacho
                     </label>
-                    <div id="lugar-despacho-display" class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-100 text-gray-500 text-sm">
-                        Seleccione primero la nota de venta...
-                    </div>
+                    <select id="select_sucursal" disabled
+                        class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-100 text-gray-500 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        onchange="document.getElementById('input_sucursal_id').value = this.value">
+                        <option value="">Seleccione primero la nota de venta...</option>
+                    </select>
+                    <p id="sucursal-loading" class="hidden text-xs text-gray-400 mt-1">Cargando sucursales...</p>
                 </div>
 
                 <!-- Fecha -->
@@ -773,21 +777,42 @@ if (urlParams.get('tab') === 'asignaciones') {
 }
 
 // Modal Asignar
-function asignarInstaladores(folio, cliente, lugarDespacho) {
+function asignarInstaladores(folio, cliente) {
     document.getElementById('modalAsignar').classList.remove('hidden');
     document.getElementById('input_nota_venta').value = folio;
+    document.getElementById('input_sucursal_id').value = '';
     document.getElementById('cliente_nombre').value = cliente;
     document.getElementById('modal-subtitle').textContent = `NV: ${folio} - Cliente: ${cliente}`;
 
-    const display = document.getElementById('lugar-despacho-display');
-    if (lugarDespacho) {
-        display.textContent = lugarDespacho;
-        display.classList.remove('text-gray-500');
-        display.classList.add('text-gray-800');
-    } else {
-        display.textContent = 'Sin lugar de despacho registrado';
-        display.classList.add('text-gray-500');
-    }
+    const select = document.getElementById('select_sucursal');
+    const loading = document.getElementById('sucursal-loading');
+
+    select.disabled = true;
+    select.innerHTML = '<option value="">Cargando sucursales...</option>';
+    select.classList.add('bg-gray-100', 'text-gray-500');
+    loading.classList.remove('hidden');
+
+    fetch(`/asignar/sucursales-folio/${folio}`)
+        .then(r => r.json())
+        .then(data => {
+            loading.classList.add('hidden');
+            select.innerHTML = '';
+            if (data.success && data.sucursales.length > 0) {
+                select.appendChild(new Option('Seleccionar sucursal...', ''));
+                data.sucursales.forEach(s => {
+                    const label = s.direccion ? `${s.nombre} — ${s.direccion}` : s.nombre;
+                    select.appendChild(new Option(label, s.id));
+                });
+                select.disabled = false;
+                select.classList.remove('bg-gray-100', 'text-gray-500');
+            } else {
+                select.appendChild(new Option('Sin sucursales registradas para esta NV', ''));
+            }
+        })
+        .catch(() => {
+            loading.classList.add('hidden');
+            select.innerHTML = '<option value="">Error al cargar sucursales</option>';
+        });
 }
 
 function cerrarModalAsignar() {

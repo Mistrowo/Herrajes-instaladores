@@ -373,7 +373,7 @@ function dashboardData() {
 
                 if (data.success) {
                     this.notaSeleccionada = data.data.nota_venta;
-                    this.cargarLugaresDespacho(data.data.nota_venta.cliente, data.data.nota_venta.codaux);
+                    this.cargarLugaresDespacho(data.data.nota_venta.folio, data.data.asignacion?.sucursal?.nombre ?? null);
 
                     if (data.data.asignacion) {
                         this.asignacion = data.data.asignacion;
@@ -443,7 +443,7 @@ function dashboardData() {
 
                 if (data.success) {
                     this.notaSeleccionada = data.data.nota_venta;
-                    this.cargarLugaresDespacho(data.data.nota_venta.cliente, data.data.nota_venta.codaux);
+                    this.cargarLugaresDespacho(data.data.nota_venta.folio, data.data.asignacion?.sucursal?.nombre ?? null);
 
                     if (data.data.asignacion) {
                         this.asignacion = data.data.asignacion;
@@ -464,20 +464,22 @@ function dashboardData() {
             }
         },
 
-        async cargarLugaresDespacho(cliente, codaux = null) {
+        async cargarLugaresDespacho(folio, preseleccionado = null) {
             this.lugaresDespacho = [];
             this.lugarSeleccionado = '';
-            if (!cliente && !codaux) return;
+            if (!folio) return;
             try {
-                const param = codaux
-                    ? `codaux=${encodeURIComponent(codaux)}`
-                    : `cliente=${encodeURIComponent(cliente)}`;
-                const response = await fetch(`/dashboard/lugares-despacho?${param}`);
+                const response = await fetch(`/asignar/sucursales-folio/${folio}`);
                 const data = await response.json();
-                if (data.success) {
-                    this.lugaresDespacho = data.lugares;
-                    if (data.lugares.length === 1) {
-                        this.lugarSeleccionado = data.lugares[0].codigo;
+                if (data.success && data.sucursales.length > 0) {
+                    this.lugaresDespacho = data.sucursales.map(s => ({
+                        codigo: s.nombre,
+                        label: s.direccion ? `${s.nombre} — ${s.direccion}` : s.nombre,
+                    }));
+                    if (preseleccionado) {
+                        this.lugarSeleccionado = preseleccionado;
+                    } else if (data.sucursales.length === 1) {
+                        this.lugarSeleccionado = data.sucursales[0].nombre;
                     }
                 }
             } catch (error) {

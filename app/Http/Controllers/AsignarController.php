@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Asigna;
 use App\Models\Instalador;
 use App\Models\NotaVtaActualiza;
+use App\Models\Proyecto;
 use App\Services\AsignarService;
 use App\Services\SucursalService;
 use Illuminate\Http\Request;
@@ -90,6 +91,43 @@ class AsignarController extends Controller
         'filtros'
     ));
 }
+
+    /**
+     * Endpoint AJAX para obtener sucursales de una nota de venta (desde portal-clientes)
+     */
+    public function obtenerSucursalesPorFolio($folio): JsonResponse
+    {
+        try {
+            $sucursales = Proyecto::where('orden', $folio)
+                ->orWhere('orden', 'LIKE', "%{$folio}%")
+                ->with('sucursal')
+                ->get()
+                ->pluck('sucursal')
+                ->filter()
+                ->unique('id')
+                ->values()
+                ->map(fn($s) => [
+                    'id'        => $s->id,
+                    'nombre'    => $s->nombre,
+                    'direccion' => implode(', ', array_filter([
+                        $s->direccion_sucursal,
+                        $s->comuna,
+                        $s->region,
+                    ])),
+                ]);
+
+            return response()->json([
+                'success'    => true,
+                'sucursales' => $sucursales,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener sucursales: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 
     /**
      * Endpoint AJAX para obtener sucursales por nombre de cliente
