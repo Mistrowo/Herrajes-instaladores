@@ -20,6 +20,12 @@ class EvidenciaController extends Controller
     public function index(Request $request, $folio)
     {
         $data = $this->evidenciaService->getEvidenciasByFolio($folio);
+
+        // Override lugarDespacho with query param if provided (passed from dashboard)
+        if ($request->filled('lugar_despacho')) {
+            $data['lugarDespacho'] = $request->input('lugar_despacho');
+        }
+
         return view('evidencia.index', $data);
     }
 

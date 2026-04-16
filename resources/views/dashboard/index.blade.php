@@ -549,8 +549,12 @@ function dashboardData() {
 
         abrirEvidencia() {
             if (!this.notaSeleccionada.folio) return;
-            const asignacionParam = this.notaSeleccionada.asignacion_id ? `?asignacion=${this.notaSeleccionada.asignacion_id}` : '';
-            window.location.href = `/dashboard/evidencias/${this.notaSeleccionada.folio}${asignacionParam}`;
+            const lugar = this.lugarSeleccionado || this.lugarDespachoAsignado || this.notaSeleccionada.lugar_despacho;
+            const params = new URLSearchParams();
+            if (this.notaSeleccionada.asignacion_id) params.set('asignacion', this.notaSeleccionada.asignacion_id);
+            if (lugar) params.set('lugar_despacho', lugar);
+            const qs = params.toString();
+            window.location.href = `/dashboard/evidencias/${this.notaSeleccionada.folio}` + (qs ? `?${qs}` : '');
         }
     }
 }
