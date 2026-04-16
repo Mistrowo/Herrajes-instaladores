@@ -59,29 +59,78 @@ class DashboardController extends Controller
         /** @var \App\Models\Instalador $user */
         $user = auth()->user();
         $buscar = $request->input('buscar', '');
-        
+        $pagina = max(1, (int) $request->input('page', 1));
+
         if ($user->esAdmin()) {
             $query = NotaVtaActualiza::query();
-        } else {
-            $asignaciones = Asigna::porInstalador($user->id)
-                ->whereIn('estado', ['aceptada', 'en_proceso'])
-                ->get();
-            
-            $folios = $asignaciones->pluck('nota_venta')->unique()->toArray();
-            
-            $query = NotaVtaActualiza::whereIn('nv_folio', $folios);
+
+            if (!empty($buscar)) {
+                $query->buscar($buscar);
+            }
+
+            $notasVenta = $query->orderBy('nv_femision', 'desc')->paginate(10);
+
+            return response()->json([
+                'success' => true,
+                'data' => $notasVenta
+            ]);
         }
-        
+
+        // Para instaladores: una entrada por asignación (permite mismo folio con distintos despachos)
+        $asignaciones = Asigna::porInstalador($user->id)
+            ->whereIn('estado', ['aceptada', 'en_proceso'])
+            ->with('sucursal')
+            ->get();
+
+        $folios = $asignaciones->pluck('nota_venta')->unique()->toArray();
+
+        // Cargar NV data
+        $notasQuery = NotaVtaActualiza::whereIn('nv_folio', $folios);
         if (!empty($buscar)) {
-            $query->buscar($buscar);
+            $notasQuery->buscar($buscar);
         }
-        
-        $notasVenta = $query->orderBy('nv_femision', 'desc')
-            ->paginate(10);
-        
+        $notasMap = $notasQuery->get()->keyBy('nv_folio');
+
+        // Filtrar asignaciones cuyo folio pasó el filtro de búsqueda
+        if (!empty($buscar)) {
+            $foliosFiltrados = $notasMap->keys()->toArray();
+            $asignaciones = $asignaciones->filter(fn($a) => in_array($a->nota_venta, $foliosFiltrados));
+        }
+
+        // Ordenar por fecha de asignación descendente
+        $asignaciones = $asignaciones->sortByDesc('created_at');
+
+        // Construir entradas por asignación
+        $entries = $asignaciones->map(function ($a) use ($notasMap) {
+            $nv = $notasMap[$a->nota_venta] ?? null;
+            $lugarDespacho = $a->sucursal?->nombre
+                ?? $a->lugar_despacho_nom
+                ?? $nv?->nv_lugardespacho
+                ?? null;
+            $lugarTipo = $a->sucursal_id ? 'portal' : ($a->lugar_despacho_cod ? 'softland' : null);
+
+            return [
+                'nv_folio'       => $a->nota_venta,
+                'nv_cliente'     => $nv?->nv_cliente ?? '—',
+                'nv_estado'      => $nv?->nv_estado ?? '—',
+                'asignacion_id'  => $a->id,
+                'lugar_despacho' => $lugarDespacho,
+                'lugar_tipo'     => $lugarTipo,
+            ];
+        })->values();
+
+        $perPage   = 10;
+        $total     = $entries->count();
+        $lastPage  = max(1, (int) ceil($total / $perPage));
+        $paginado  = $entries->forPage($pagina, $perPage)->values();
+
         return response()->json([
             'success' => true,
-            'data' => $notasVenta
+            'data' => [
+                'data'         => $paginado,
+                'current_page' => $pagina,
+                'last_page'    => $lastPage,
+            ]
         ]);
     }
 
@@ -172,37 +221,46 @@ class DashboardController extends Controller
      */
     public function obtenerDetallesNV(Request $request): JsonResponse
     {
-        $folio = $request->input('folio');
-        
+        $folio        = $request->input('folio');
+        $asignacionId = $request->input('asignacion_id') ? (int) $request->input('asignacion_id') : null;
+
         /** @var \App\Models\Instalador $user */
         $user = auth()->user();
-        
+
         if (!$user->esAdmin()) {
-            $tieneAsignacion = Asigna::porInstalador($user->id)
+            $query = Asigna::porInstalador($user->id)
                 ->where('nota_venta', $folio)
-                ->whereIn('estado', ['aceptada', 'en_proceso'])
-                ->exists();
-            
-            if (!$tieneAsignacion) {
+                ->whereIn('estado', ['aceptada', 'en_proceso']);
+
+            if ($asignacionId) {
+                $query->where('id', $asignacionId);
+            }
+
+            if (!$query->exists()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No tienes permiso para ver esta nota de venta'
                 ], 403);
             }
         }
-        
+
         $notaVenta = NotaVtaActualiza::where('nv_folio', $folio)->first();
-        
+
         if (!$notaVenta) {
             return response()->json([
                 'success' => false,
                 'message' => 'Nota de venta no encontrada'
             ], 404);
         }
-        
-        $asignacion = Asigna::where('nota_venta', $folio)
-            ->with(['instalador1', 'instalador2', 'instalador3', 'instalador4', 'sucursal'])
-            ->first();
+
+        $asignacionQuery = Asigna::where('nota_venta', $folio)
+            ->with(['instalador1', 'instalador2', 'instalador3', 'instalador4', 'sucursal']);
+
+        if ($asignacionId) {
+            $asignacionQuery->where('id', $asignacionId);
+        }
+
+        $asignacion = $asignacionQuery->first();
         
         $dataAsignacion = null;
         if ($asignacion) {
@@ -233,15 +291,17 @@ class DashboardController extends Controller
             }
             
             $dataAsignacion = [
-                'id' => $asignacion->id,
-                'fecha_asigna' => $asignacion->fecha_asigna_formateada,
-                'fecha_acepta' => $asignacion->fecha_acepta_formateada,
-                'observaciones' => $asignacion->observaciones,
-                'estado' => $asignacion->estado,
-                'estado_badge' => $asignacion->estado_badge,
-                'instaladores' => $instaladores,
-                'cantidad_instaladores' => $asignacion->cantidadInstaladores(),
-                'sucursal' => $sucursalData, // ⭐ NUEVO
+                'id'                   => $asignacion->id,
+                'fecha_asigna'         => $asignacion->fecha_asigna_formateada,
+                'fecha_acepta'         => $asignacion->fecha_acepta_formateada,
+                'observaciones'        => $asignacion->observaciones,
+                'estado'               => $asignacion->estado,
+                'estado_badge'         => $asignacion->estado_badge,
+                'instaladores'         => $instaladores,
+                'cantidad_instaladores'=> $asignacion->cantidadInstaladores(),
+                'sucursal'             => $sucursalData,
+                'lugar_despacho_cod'   => $asignacion->lugar_despacho_cod,
+                'lugar_despacho_nom'   => $asignacion->lugar_despacho_nom,
             ];
         }
         
@@ -249,20 +309,21 @@ class DashboardController extends Controller
             'success' => true,
             'data' => [
                 'nota_venta' => [
-                    'folio' => $notaVenta->nv_folio,
-                    'folio_formateado' => $notaVenta->folio_formateado,
-                    'cliente' => $notaVenta->nv_cliente,
-                    'descripcion' => $notaVenta->nv_descripcion,
-                    'vendedor' => $notaVenta->nv_vend,
-                    'estado' => $notaVenta->nv_estado,
-                    'fecha_emision' => $notaVenta->fecha_emision_formateada,
-                    'fecha_entrega' => $notaVenta->fecha_entrega_formateada,
-                    'direccion' => $notaVenta->nv_direccion,
-                    'comuna' => $notaVenta->nv_comuna,
-                    'ciudad' => $notaVenta->nv_ciudad,
-                    'telefono' => $notaVenta->nv_telefono,
-                    'lugar_despacho' => $notaVenta->nv_lugardespacho,
-                    'codaux' => $notaVenta->nv_codaux,
+                    'folio'           => $notaVenta->nv_folio,
+                    'folio_formateado'=> $notaVenta->folio_formateado,
+                    'cliente'         => $notaVenta->nv_cliente,
+                    'descripcion'     => $notaVenta->nv_descripcion,
+                    'vendedor'        => $notaVenta->nv_vend,
+                    'estado'          => $notaVenta->nv_estado,
+                    'fecha_emision'   => $notaVenta->fecha_emision_formateada,
+                    'fecha_entrega'   => $notaVenta->fecha_entrega_formateada,
+                    'direccion'       => $notaVenta->nv_direccion,
+                    'comuna'          => $notaVenta->nv_comuna,
+                    'ciudad'          => $notaVenta->nv_ciudad,
+                    'telefono'        => $notaVenta->nv_telefono,
+                    'lugar_despacho'  => $notaVenta->nv_lugardespacho,
+                    'codaux'          => $notaVenta->nv_codaux,
+                    'asignacion_id'   => $dataAsignacion ? $dataAsignacion['id'] : null,
                 ],
                 'asignacion' => $dataAsignacion
             ]

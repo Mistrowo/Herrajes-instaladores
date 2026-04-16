@@ -148,6 +148,9 @@
                             Nota de Venta
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Lugar de Despacho
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Equipo Asignado
                         </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -168,6 +171,26 @@
                             <div class="text-sm font-medium text-gray-900">{{ $asignacion->nota_venta }}</div>
                             @if($asignacion->observaciones)
                                 <div class="text-xs text-gray-500 mt-1">{{ Str::limit($asignacion->observaciones, 50) }}</div>
+                            @endif
+                        </td>
+                        <td class="px-4 py-4">
+                            @if($asignacion->sucursal_id && $asignacion->sucursal)
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-blue-500">📍</span>
+                                    <span class="text-sm font-medium text-gray-800">{{ $asignacion->sucursal->nombre }}</span>
+                                </div>
+                            @elseif($asignacion->lugar_despacho_nom)
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-orange-500">🚚</span>
+                                    <span class="text-sm font-medium text-gray-800">{{ $asignacion->lugar_despacho_nom }}</span>
+                                </div>
+                            @elseif($asignacion->lugar_despacho_cod)
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-orange-500">🚚</span>
+                                    <span class="text-sm font-medium text-gray-800">{{ $asignacion->lugar_despacho_cod }}</span>
+                                </div>
+                            @else
+                                <span class="text-xs text-gray-400 italic">Sin definir</span>
                             @endif
                         </td>
                         <td class="px-4 py-4">
@@ -267,7 +290,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center">
+                        <td colspan="6" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center">
                                 <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>

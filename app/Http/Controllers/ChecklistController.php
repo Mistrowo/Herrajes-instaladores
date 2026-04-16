@@ -23,15 +23,17 @@ class ChecklistController extends Controller
     /**
      * Mostrar formulario de checklist
      */
-    public function index(int $folio)
+    public function index(Request $request, int $folio)
     {
         Log::info('ChecklistController: index', ['folio' => $folio]);
 
         try {
-            $data = $this->checklistService->getByFolio($folio);
-            
+            $asignacionId = $request->query('asignacion') ? (int) $request->query('asignacion') : null;
+            $data = $this->checklistService->getByFolio($folio, $asignacionId);
+
             $nota = NotaVtaActualiza::where('nv_folio', $folio)->first();
             $lugarDespacho = $data['asignacion']->sucursal?->nombre
+                ?? $data['asignacion']->lugar_despacho_nom
                 ?? $nota?->nv_lugardespacho;
 
             Log::info('ChecklistController: Datos cargados', [

@@ -96,16 +96,18 @@ class AsignarService
     public function crearAsignacion(array $datos): Asigna
     {
         return Asigna::create([
-            'nota_venta' => $datos['nota_venta'],
-            'sucursal_id' => $datos['sucursal_id'] ?? null,
-            'fecha_asigna' => $datos['fecha_asigna'],
-            'asignado1' => $datos['asignado1'] ?? null,
-            'asignado2' => $datos['asignado2'] ?? null,
-            'asignado3' => $datos['asignado3'] ?? null,
-            'asignado4' => $datos['asignado4'] ?? null,
-            'solicita' => $datos['solicita'] ?? auth()->user()?->nombre ?? auth()->user()?->name ?? 'Admin',
-            'estado' => 'pendiente',
-            'observaciones' => $datos['observaciones'] ?? null,
+            'nota_venta'         => $datos['nota_venta'],
+            'sucursal_id'        => $datos['sucursal_id'] ?? null,
+            'lugar_despacho_cod' => $datos['lugar_despacho_cod'] ?? null,
+            'lugar_despacho_nom' => $datos['lugar_despacho_nom'] ?? null,
+            'fecha_asigna'       => $datos['fecha_asigna'],
+            'asignado1'          => $datos['asignado1'] ?? null,
+            'asignado2'          => $datos['asignado2'] ?? null,
+            'asignado3'          => $datos['asignado3'] ?? null,
+            'asignado4'          => $datos['asignado4'] ?? null,
+            'solicita'           => $datos['solicita'] ?? auth()->user()?->nombre ?? auth()->user()?->name ?? 'Admin',
+            'estado'             => 'pendiente',
+            'observaciones'      => $datos['observaciones'] ?? null,
         ]);
     }
 
@@ -121,14 +123,16 @@ class AsignarService
         $asignacion = Asigna::findOrFail($id);
         
         $asignacion->update([
-            'nota_venta' => $datos['nota_venta'] ?? $asignacion->nota_venta,
-            'sucursal_id' => $datos['sucursal_id'] ?? $asignacion->sucursal_id,
-            'fecha_asigna' => $datos['fecha_asigna'] ?? $asignacion->fecha_asigna,
-            'asignado1' => $datos['asignado1'] ?? $asignacion->asignado1,
-            'asignado2' => $datos['asignado2'] ?? $asignacion->asignado2,
-            'asignado3' => $datos['asignado3'] ?? $asignacion->asignado3,
-            'asignado4' => $datos['asignado4'] ?? $asignacion->asignado4,
-            'observaciones' => $datos['observaciones'] ?? $asignacion->observaciones,
+            'nota_venta'         => $datos['nota_venta'] ?? $asignacion->nota_venta,
+            'sucursal_id'        => array_key_exists('sucursal_id', $datos) ? $datos['sucursal_id'] : $asignacion->sucursal_id,
+            'lugar_despacho_cod' => array_key_exists('lugar_despacho_cod', $datos) ? $datos['lugar_despacho_cod'] : $asignacion->lugar_despacho_cod,
+            'lugar_despacho_nom' => array_key_exists('lugar_despacho_nom', $datos) ? $datos['lugar_despacho_nom'] : $asignacion->lugar_despacho_nom,
+            'fecha_asigna'       => $datos['fecha_asigna'] ?? $asignacion->fecha_asigna,
+            'asignado1'          => $datos['asignado1'] ?? $asignacion->asignado1,
+            'asignado2'          => $datos['asignado2'] ?? $asignacion->asignado2,
+            'asignado3'          => $datos['asignado3'] ?? $asignacion->asignado3,
+            'asignado4'          => $datos['asignado4'] ?? $asignacion->asignado4,
+            'observaciones'      => $datos['observaciones'] ?? $asignacion->observaciones,
         ]);
 
         return $asignacion->fresh();

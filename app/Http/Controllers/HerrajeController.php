@@ -13,6 +13,7 @@ use App\Http\Requests\StoreHerrajeItemRequest;
 use App\Http\Requests\UpdateHerrajeItemRequest;
 use App\Http\Requests\UpdateHerrajeHeaderRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -31,7 +32,7 @@ class HerrajeController extends Controller
     /**
      * Mostrar formulario de herrajes por folio de nota de venta
      */
-    public function showByFolio(int $folio): View
+    public function showByFolio(int $folio, Request $request): View
     {
         Log::info('=== INICIANDO showByFolio ===', [
             'folio' => $folio,
@@ -41,24 +42,33 @@ class HerrajeController extends Controller
         try {
             // Buscar nota de venta
             $nota = NotaVtaActualiza::where('nv_folio', $folio)->first();
-            
-            // Buscar asignación
-            $asigna = Asigna::where('nota_venta', $folio)
+
+            // Buscar asignación: priorizar la que viene por query param
+            $asignacionId = $request->input('asignacion_id');
+            $asignaQuery = Asigna::where('nota_venta', $folio)
                 ->with('sucursal')
-                ->latest('fecha_asigna')
-                ->first();
+                ->latest('fecha_asigna');
+            if ($asignacionId) {
+                $asignaQuery->where('id', $asignacionId);
+            }
+            $asigna = $asignaQuery->first();
 
             // Obtener sucursal de la asignación si existe
             $sucursalId = $asigna ? $asigna->sucursal_id : null;
 
             // Obtener o crear herraje
             $herraje = $this->herrajeService->obtenerOCrearHerraje($folio, Auth::id(), $sucursalId);
-            
+
             // Cargar relaciones
             $herraje->load(['items', 'instalador', 'asigna', 'sucursal']);
 
-            // Lugar de despacho desde la nota de venta
-            $lugarDespacho = $nota ? $nota->nv_lugardespacho : null;
+            // Lugar de despacho: query param → asignación (portal o softland) → NV
+            $lugarDespacho = $request->input('lugar_despacho')
+                ?? $asigna?->sucursal?->nombre
+                ?? $asigna?->lugar_despacho_nom
+                ?? $asigna?->lugar_despacho_cod
+                ?? ($nota?->nv_lugardespacho)
+                ?? null;
 
             // Instaladores activos
             $instaladores = Instalador::activo()

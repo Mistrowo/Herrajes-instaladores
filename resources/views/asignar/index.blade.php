@@ -91,53 +91,97 @@
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <div class="text-sm text-gray-600">{{ $nv->fecha_entrega_formateada }}</div>
                             </td>
-                            <td class="px-4 py-3 text-center">
+                            <td class="px-4 py-3">
                                 @php
-                                    $asignacion = $asignaciones->firstWhere('nota_venta', $nv->nv_folio);
+                                    $sucursalesDeNota = $sucursalesPorFolio[$nv->nv_folio] ?? collect();
+                                    $asignacionesDeNota = $asignaciones->get($nv->nv_folio, collect());
+                                    $asignacionesPorSucursal = $asignacionesDeNota->keyBy('sucursal_id');
                                 @endphp
-                                
-                                @if($asignacion)
-                                    <div class="flex flex-col items-center gap-1">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
-                                                     bg-{{ $asignacion->estado_badge['color'] }}-100 
-                                                     text-{{ $asignacion->estado_badge['color'] }}-800">
-                                            {{ $asignacion->estado_badge['text'] }}
-                                        </span>
-                                        @if($asignacion->sucursal)
-                                            <span class="text-xs text-gray-500">
-                                                📍 {{ $asignacion->sucursal->nombre }}
-                                            </span>
-                                        @endif
-                                        <div class="flex gap-1">
-                                            <button onclick="verAsignacion({{ $asignacion->id }})" 
-                                                    class="text-blue-600 hover:text-blue-800 text-xs underline">Ver</button>
-                                            <span class="text-gray-400">|</span>
-                                            <button 
-                                                class="text-green-600 hover:text-green-800 text-xs underline btn-editar-inline"
-                                                data-id="{{ $asignacion->id }}"
-                                                data-nota-venta="{{ $asignacion->nota_venta }}"
-                                                data-fecha="{{ $asignacion->fecha_asigna->format('Y-m-d') }}"
-                                                data-asignado1="{{ $asignacion->asignado1 ?? '' }}"
-                                                data-asignado2="{{ $asignacion->asignado2 ?? '' }}"
-                                                data-asignado3="{{ $asignacion->asignado3 ?? '' }}"
-                                                data-asignado4="{{ $asignacion->asignado4 ?? '' }}"
-                                                data-sucursal-id="{{ $asignacion->sucursal_id ?? '' }}"
-                                                data-observaciones="{{ $asignacion->observaciones ?? '' }}"
-                                                data-cliente="{{ $nv->nv_cliente }}"
-                                                data-lugar-despacho="{{ $nv->nv_lugardespacho ?? '' }}">
-                                                Editar
-                                            </button>
-                                        </div>
-                                    </div>
-                                @else
-                                    <button onclick="asignarInstaladores('{{ $nv->nv_folio }}', '{{ $nv->nv_cliente }}')"
-                                            class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                        </svg>
-                                        Asignar
-                                    </button>
-                                @endif
+
+                                <div class="flex flex-col gap-1.5">
+                                    @if($sucursalesDeNota->isEmpty())
+                                        {{-- Sin sucursales en Proyecto: mostrar asignaciones existentes (Softland) + botón --}}
+                                        @foreach($asignacionesDeNota as $asig)
+                                            <div class="flex items-center justify-between gap-2 text-xs border border-orange-100 rounded-lg px-2 py-1.5 bg-orange-50">
+                                                <span class="text-orange-700 font-medium truncate max-w-[140px]" title="{{ $asig->lugar_despacho_nom ?? $asig->lugar_despacho_cod }}">
+                                                    🛠️ {{ $asig->lugar_despacho_nom ?? $asig->lugar_despacho_cod ?? 'Despacho' }}
+                                                </span>
+                                                <div class="flex items-center gap-1 shrink-0">
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-{{ $asig->estado_badge['color'] }}-100 text-{{ $asig->estado_badge['color'] }}-800">
+                                                        {{ $asig->estado_badge['text'] }}
+                                                    </span>
+                                                    <button onclick="verAsignacion({{ $asig->id }})"
+                                                            class="text-blue-600 hover:text-blue-800 underline">Ver</button>
+                                                    <span class="text-gray-300">|</span>
+                                                    <button class="text-green-600 hover:text-green-800 underline btn-editar-inline"
+                                                        data-id="{{ $asig->id }}"
+                                                        data-nota-venta="{{ $asig->nota_venta }}"
+                                                        data-fecha="{{ $asig->fecha_asigna->format('Y-m-d') }}"
+                                                        data-asignado1="{{ $asig->asignado1 ?? '' }}"
+                                                        data-asignado2="{{ $asig->asignado2 ?? '' }}"
+                                                        data-asignado3="{{ $asig->asignado3 ?? '' }}"
+                                                        data-asignado4="{{ $asig->asignado4 ?? '' }}"
+                                                        data-sucursal-id="{{ $asig->sucursal_id ?? '' }}"
+                                                        data-lugar-despacho-cod="{{ $asig->lugar_despacho_cod ?? '' }}"
+                                                        data-lugar-despacho-nom="{{ $asig->lugar_despacho_nom ?? '' }}"
+                                                        data-observaciones="{{ $asig->observaciones ?? '' }}"
+                                                        data-cliente="{{ $nv->nv_cliente }}">
+                                                        Editar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                        <button onclick="asignarInstaladores('{{ $nv->nv_folio }}', '{{ addslashes($nv->nv_cliente) }}')"
+                                                class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition-colors">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                            </svg>
+                                            Asignar
+                                        </button>
+                                    @else
+                                        @foreach($sucursalesDeNota as $sucursal)
+                                            @php $asig = $asignacionesPorSucursal->get($sucursal->id); @endphp
+                                            <div class="flex items-center justify-between gap-2 text-xs border border-gray-100 rounded-lg px-2 py-1.5 bg-gray-50">
+                                                <span class="text-gray-600 font-medium truncate max-w-[140px]" title="{{ $sucursal->nombre }}">
+                                                    📍 {{ $sucursal->nombre }}
+                                                </span>
+                                                @if($asig)
+                                                    <div class="flex items-center gap-1 shrink-0">
+                                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-{{ $asig->estado_badge['color'] }}-100 text-{{ $asig->estado_badge['color'] }}-800">
+                                                            {{ $asig->estado_badge['text'] }}
+                                                        </span>
+                                                        <button onclick="verAsignacion({{ $asig->id }})"
+                                                                class="text-blue-600 hover:text-blue-800 underline">Ver</button>
+                                                        <span class="text-gray-300">|</span>
+                                                        <button class="text-green-600 hover:text-green-800 underline btn-editar-inline"
+                                                            data-id="{{ $asig->id }}"
+                                                            data-nota-venta="{{ $asig->nota_venta }}"
+                                                            data-fecha="{{ $asig->fecha_asigna->format('Y-m-d') }}"
+                                                            data-asignado1="{{ $asig->asignado1 ?? '' }}"
+                                                            data-asignado2="{{ $asig->asignado2 ?? '' }}"
+                                                            data-asignado3="{{ $asig->asignado3 ?? '' }}"
+                                                            data-asignado4="{{ $asig->asignado4 ?? '' }}"
+                                                            data-sucursal-id="{{ $asig->sucursal_id ?? '' }}"
+                                                            data-lugar-despacho-cod="{{ $asig->lugar_despacho_cod ?? '' }}"
+                                                            data-lugar-despacho-nom="{{ $asig->lugar_despacho_nom ?? '' }}"
+                                                            data-observaciones="{{ $asig->observaciones ?? '' }}"
+                                                            data-cliente="{{ $nv->nv_cliente }}">
+                                                            Editar
+                                                        </button>
+                                                    </div>
+                                                @else
+                                                    <button onclick="asignarInstaladores('{{ $nv->nv_folio }}', '{{ addslashes($nv->nv_cliente) }}', {{ $sucursal->id }}, '{{ addslashes($sucursal->nombre) }}')"
+                                                            class="inline-flex items-center px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded font-medium transition-colors shrink-0">
+                                                        <svg class="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                                        </svg>
+                                                        Asignar
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                         @empty
@@ -350,9 +394,15 @@
                                 </div>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="text-sm text-gray-700">
-                                    {{ $asig->notaVenta?->nv_lugardespacho ?? '-' }}
-                                </span>
+                                @if($asig->sucursal_id && $asig->sucursal)
+                                    <span class="text-sm text-gray-700">📍 {{ $asig->sucursal->nombre }}</span>
+                                @elseif($asig->lugar_despacho_nom)
+                                    <span class="text-sm text-orange-700">�️ {{ $asig->lugar_despacho_nom }}</span>
+                                @elseif($asig->lugar_despacho_cod)
+                                    <span class="text-sm text-orange-700">�️ {{ $asig->lugar_despacho_cod }}</span>
+                                @else
+                                    <span class="text-sm text-gray-400">-</span>
+                                @endif
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex flex-wrap gap-1">
@@ -397,6 +447,8 @@
                                         data-asignado3="{{ $asig->asignado3 ?? '' }}"
                                         data-asignado4="{{ $asig->asignado4 ?? '' }}"
                                         data-sucursal-id="{{ $asig->sucursal_id ?? '' }}"
+                                        data-lugar-despacho-cod="{{ $asig->lugar_despacho_cod ?? '' }}"
+                                        data-lugar-despacho-nom="{{ $asig->lugar_despacho_nom ?? '' }}"
                                         data-observaciones="{{ $asig->observaciones ?? '' }}"
                                         data-cliente="{{ $asig->notaVenta ? $asig->notaVenta->nv_cliente : '' }}">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -467,6 +519,8 @@
             
             <input type="hidden" name="nota_venta" id="input_nota_venta">
             <input type="hidden" name="sucursal_id" id="input_sucursal_id">
+            <input type="hidden" name="lugar_despacho_cod" id="input_lugar_despacho_cod">
+            <input type="hidden" name="lugar_despacho_nom" id="input_lugar_despacho_nom">
             <input type="hidden" id="cliente_nombre" value="">
 
             <div class="space-y-6">
@@ -480,8 +534,7 @@
                         Lugar de Despacho
                     </label>
                     <select id="select_sucursal" disabled
-                        class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-100 text-gray-500 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        onchange="document.getElementById('input_sucursal_id').value = this.value">
+                        class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-100 text-gray-500 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">Seleccione primero la nota de venta...</option>
                     </select>
                     <p id="sucursal-loading" class="hidden text-xs text-gray-400 mt-1">Cargando sucursales...</p>
@@ -604,6 +657,8 @@
             @method('PUT')
 
             <input type="hidden" name="sucursal_id" id="edit_sucursal_id">
+            <input type="hidden" name="lugar_despacho_cod" id="edit_lugar_despacho_cod">
+            <input type="hidden" name="lugar_despacho_nom" id="edit_lugar_despacho_nom">
 
             <div class="space-y-6">
                 <!-- Nota de Venta -->
@@ -624,7 +679,7 @@
                     </label>
                     <select id="edit_select_sucursal" disabled
                         class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg bg-gray-100 text-gray-500 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                        onchange="document.getElementById('edit_sucursal_id').value = this.value">
+                        onchange="onEditDespachoChange(this)">
                         <option value="">Cargando...</option>
                     </select>
                 </div>
@@ -779,19 +834,37 @@ if (urlParams.get('tab') === 'asignaciones') {
     cambiarTab('asignaciones');
 }
 
+// Limpia los campos de despacho del modal crear
+function limpiarDespachoAsignar() {
+    document.getElementById('input_sucursal_id').value = '';
+    document.getElementById('input_lugar_despacho_cod').value = '';
+    document.getElementById('input_lugar_despacho_nom').value = '';
+}
+
 // Modal Asignar
-function asignarInstaladores(folio, cliente) {
+function asignarInstaladores(folio, cliente, sucursalId = null, sucursalNombre = null) {
     document.getElementById('modalAsignar').classList.remove('hidden');
     document.getElementById('input_nota_venta').value = folio;
-    document.getElementById('input_sucursal_id').value = '';
     document.getElementById('cliente_nombre').value = cliente;
     document.getElementById('modal-subtitle').textContent = `NV: ${folio} - Cliente: ${cliente}`;
+    limpiarDespachoAsignar();
 
     const select = document.getElementById('select_sucursal');
     const loading = document.getElementById('sucursal-loading');
 
+    // Si viene con sucursal portal pre-definida, pre-llenar y bloquear el select
+    if (sucursalId) {
+        document.getElementById('input_sucursal_id').value = sucursalId;
+        select.innerHTML = `<option value="${sucursalId}" selected>${sucursalNombre}</option>`;
+        select.disabled = true;
+        select.classList.add('bg-gray-100', 'text-gray-500');
+        loading.classList.add('hidden');
+        return;
+    }
+
+    // Sin sucursal pre-definida: cargar dinámicamente (portal o Softland)
     select.disabled = true;
-    select.innerHTML = '<option value="">Cargando sucursales...</option>';
+    select.innerHTML = '<option value="">Cargando lugares de despacho...</option>';
     select.classList.add('bg-gray-100', 'text-gray-500');
     loading.classList.remove('hidden');
 
@@ -801,22 +874,29 @@ function asignarInstaladores(folio, cliente) {
             loading.classList.add('hidden');
             select.innerHTML = '';
             if (data.success && data.sucursales.length > 0) {
-                select.appendChild(new Option('Seleccionar sucursal...', ''));
+                const placeholder = data.tipo === 'softland'
+                    ? 'Seleccionar lugar de despacho (Softland)...'
+                    : 'Seleccionar sucursal...';
+                select.appendChild(new Option(placeholder, ''));
                 data.sucursales.forEach(s => {
                     const label = s.direccion ? `${s.nombre} — ${s.direccion}` : s.nombre;
                     select.appendChild(new Option(label, s.id));
                 });
                 select.disabled = false;
                 select.classList.remove('bg-gray-100', 'text-gray-500');
+                // Guardar el tipo en el select para usarlo en onchange
+                select.dataset.tipo = data.tipo;
+                select.dataset.items = JSON.stringify(data.sucursales);
             } else {
-                select.appendChild(new Option('Sin sucursales registradas para esta NV', ''));
+                select.appendChild(new Option('Sin lugares de despacho registrados', ''));
             }
         })
         .catch(() => {
             loading.classList.add('hidden');
-            select.innerHTML = '<option value="">Error al cargar sucursales</option>';
+            select.innerHTML = '<option value="">Error al cargar</option>';
         });
 }
+
 
 function cerrarModalAsignar() {
     document.getElementById('modalAsignar').classList.add('hidden');
@@ -836,28 +916,44 @@ function editarAsignacionConDatos(button) {
     document.getElementById('edit_asignado4').value = data.asignado4 || '';
     document.getElementById('edit_observaciones').value = data.observaciones || '';
     document.getElementById('edit_sucursal_id').value = data.sucursalId || '';
+    document.getElementById('edit_lugar_despacho_cod').value = data.lugarDespachoCod || '';
+    document.getElementById('edit_lugar_despacho_nom').value = data.lugarDespachoNom || '';
 
     const select = document.getElementById('edit_select_sucursal');
     select.disabled = true;
-    select.innerHTML = '<option value="">Cargando sucursales...</option>';
+    select.innerHTML = '<option value="">Cargando...</option>';
     select.classList.add('bg-gray-100', 'text-gray-500');
 
     fetch(`/asignar/sucursales-folio/${data.notaVenta}`)
         .then(r => r.json())
         .then(res => {
             select.innerHTML = '';
+            select.dataset.tipo = res.tipo || 'portal';
+            select.dataset.items = JSON.stringify(res.sucursales || []);
+
             if (res.success && res.sucursales.length > 0) {
-                select.appendChild(new Option('Seleccionar sucursal...', ''));
+                const placeholder = res.tipo === 'softland'
+                    ? 'Seleccionar lugar de despacho (Softland)...'
+                    : 'Seleccionar sucursal...';
+                select.appendChild(new Option(placeholder, ''));
+
+                // Determinar qué valor pre-seleccionar
+                const currentVal = res.tipo === 'softland'
+                    ? data.lugarDespachoCod
+                    : data.sucursalId;
+
                 res.sucursales.forEach(s => {
                     const label = s.direccion ? `${s.nombre} — ${s.direccion}` : s.nombre;
                     const opt = new Option(label, s.id);
-                    if (s.id == data.sucursalId) opt.selected = true;
+                    if (String(s.id) === String(currentVal)) opt.selected = true;
                     select.appendChild(opt);
                 });
                 select.disabled = false;
                 select.classList.remove('bg-gray-100', 'text-gray-500');
             } else {
-                select.appendChild(new Option('Sin sucursales en portal', ''));
+                const current = data.lugarDespachoNom || data.lugarDespachoCod || data.sucursalId;
+                select.appendChild(new Option(current ? `(${current})` : 'Sin lugares de despacho', current || ''));
+                if (current) select.value = current;
             }
         })
         .catch(() => {
@@ -865,15 +961,54 @@ function editarAsignacionConDatos(button) {
         });
 }
 
-// Event listeners para botones de editar
+function onEditDespachoChange(select) {
+    const tipo = select.dataset.tipo || 'portal';
+    const items = JSON.parse(select.dataset.items || '[]');
+    const selected = items.find(s => String(s.id) === String(select.value));
+
+    document.getElementById('edit_sucursal_id').value = '';
+    document.getElementById('edit_lugar_despacho_cod').value = '';
+    document.getElementById('edit_lugar_despacho_nom').value = '';
+
+    if (!select.value || !selected) return;
+
+    if (tipo === 'softland') {
+        document.getElementById('edit_lugar_despacho_cod').value = selected.id;
+        document.getElementById('edit_lugar_despacho_nom').value = selected.nombre;
+    } else {
+        document.getElementById('edit_sucursal_id').value = selected.id;
+    }
+}
+
+// Event listeners
 document.addEventListener('DOMContentLoaded', function() {
+    // Modal crear: al cambiar selección, setear hidden inputs correctos
+    document.getElementById('select_sucursal').addEventListener('change', function() {
+        const tipo = this.dataset.tipo || 'portal';
+        const items = JSON.parse(this.dataset.items || '[]');
+        const selected = items.find(s => String(s.id) === String(this.value));
+
+        document.getElementById('input_sucursal_id').value = '';
+        document.getElementById('input_lugar_despacho_cod').value = '';
+        document.getElementById('input_lugar_despacho_nom').value = '';
+
+        if (!this.value || !selected) return;
+
+        if (tipo === 'softland') {
+            document.getElementById('input_lugar_despacho_cod').value = selected.id;
+            document.getElementById('input_lugar_despacho_nom').value = selected.nombre;
+        } else {
+            document.getElementById('input_sucursal_id').value = selected.id;
+        }
+    });
+
     // Botones en tabla de asignaciones
     document.querySelectorAll('.btn-editar').forEach(button => {
         button.addEventListener('click', function() {
             editarAsignacionConDatos(this);
         });
     });
-    
+
     // Botones inline en tabla de notas de venta
     document.querySelectorAll('.btn-editar-inline').forEach(button => {
         button.addEventListener('click', function() {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Asigna;
 use App\Models\Instalador;
+use App\Models\LugarDespacho;
 use App\Models\NotaVtaActualiza;
 use App\Models\Proyecto;
 use App\Services\AsignarService;
@@ -51,12 +52,35 @@ class AsignarController extends Controller
     }
     
     $notasVenta = $queryNV->orderBy('nv_folio', 'desc')->paginate(15)->withQueryString();
-    
+
+    // Cargar sucursales de Proyecto para los folios de la página actual
+    $foliosPagina = $notasVenta->pluck('nv_folio');
+
+    $sucursalesPorFolio = $foliosPagina->mapWithKeys(function ($folio) {
+        $sucursales = Proyecto::with('sucursal')
+            ->where(function ($q) use ($folio) {
+                $q->where('orden', $folio)
+                  ->orWhere('orden', 'LIKE', "%{$folio}%");
+            })
+            ->get()
+            ->pluck('sucursal')
+            ->filter()
+            ->unique('id')
+            ->values();
+        return [$folio => $sucursales];
+    });
+
+    // Asignaciones agrupadas por nota_venta para la página actual
+    $asignaciones = Asigna::with('sucursal')
+        ->whereIn('nota_venta', $foliosPagina)
+        ->get()
+        ->groupBy('nota_venta');
+
     $filtros = [
         'nota_venta' => $request->input('nota_venta'),
         'estado' => $request->input('estado'),
     ];
-    
+
     $queryAsignaciones = Asigna::with([
         'instalador1',
         'instalador2',
@@ -65,26 +89,25 @@ class AsignarController extends Controller
         'sucursal',
         'notaVenta',
     ]);
-    
+
     if ($filtros['nota_venta']) {
         $queryAsignaciones->where('nota_venta', 'like', '%' . $filtros['nota_venta'] . '%');
     }
-    
+
     if ($filtros['estado']) {
         $queryAsignaciones->where('estado', $filtros['estado']);
     }
-    
+
     $asignacionesPaginadas = $queryAsignaciones->orderBy('fecha_asigna', 'desc')
         ->paginate(15, ['*'], 'asignaciones_page')
         ->withQueryString();
-    
-    $asignaciones = Asigna::with('sucursal')->get();
-    
+
     $instaladores = Instalador::where('activo', 1)->orderBy('nombre')->get();
-    
+
     return view('asignar.index', compact(
         'notasVenta',
         'asignaciones',
+        'sucursalesPorFolio',
         'asignacionesPaginadas',
         'instaladores',
         'filtrosNV',
@@ -105,20 +128,47 @@ class AsignarController extends Controller
                 ->pluck('sucursal')
                 ->filter()
                 ->unique('id')
-                ->values()
-                ->map(fn($s) => [
-                    'id'        => $s->id,
-                    'nombre'    => $s->nombre,
-                    'direccion' => implode(', ', array_filter([
-                        $s->direccion_sucursal,
-                        $s->comuna,
-                        $s->region,
-                    ])),
+                ->values();
+
+            if ($sucursales->isNotEmpty()) {
+                return response()->json([
+                    'success'    => true,
+                    'tipo'       => 'portal',
+                    'sucursales' => $sucursales->map(fn($s) => [
+                        'id'        => $s->id,
+                        'nombre'    => $s->nombre,
+                        'direccion' => implode(', ', array_filter([
+                            $s->direccion_sucursal,
+                            $s->comuna,
+                            $s->region,
+                        ])),
+                        'tipo'      => 'portal',
+                    ]),
                 ]);
+            }
+
+            // Fallback: buscar lugares de despacho en Softland
+            $nv = NotaVtaActualiza::where('nv_folio', $folio)->first();
+
+            if (!$nv) {
+                return response()->json([
+                    'success'    => true,
+                    'tipo'       => 'softland',
+                    'sucursales' => [],
+                ]);
+            }
+
+            $despachos = LugarDespacho::porNombreCliente($nv->nv_cliente);
 
             return response()->json([
                 'success'    => true,
-                'sucursales' => $sucursales,
+                'tipo'       => 'softland',
+                'sucursales' => $despachos->map(fn($d) => [
+                    'id'        => trim($d->cw_codldespacho),
+                    'nombre'    => trim($d->cw_nomldespacho),
+                    'direccion' => '',
+                    'tipo'      => 'softland',
+                ]),
             ]);
 
         } catch (\Exception $e) {
@@ -197,17 +247,39 @@ class AsignarController extends Controller
     {
         try {
             $validatedData = $request->validate([
-                'nota_venta' => 'required|string',
-                'sucursal_id' => 'nullable|integer',
-                'asignado1' => 'nullable|exists:sh_instalador,id',
-                'asignado2' => 'nullable|exists:sh_instalador,id',
-                'asignado3' => 'nullable|exists:sh_instalador,id',
-                'asignado4' => 'nullable|exists:sh_instalador,id',
-                'fecha_asigna' => 'required|date',
-                'observaciones' => 'nullable|string',
+                'nota_venta'          => 'required|string',
+                'sucursal_id'         => 'nullable|integer',
+                'lugar_despacho_cod'  => 'nullable|string|max:50',
+                'lugar_despacho_nom'  => 'nullable|string|max:200',
+                'asignado1'           => 'nullable|exists:sh_instalador,id',
+                'asignado2'           => 'nullable|exists:sh_instalador,id',
+                'asignado3'           => 'nullable|exists:sh_instalador,id',
+                'asignado4'           => 'nullable|exists:sh_instalador,id',
+                'fecha_asigna'        => 'required|date',
+                'observaciones'       => 'nullable|string',
             ]);
 
-            $asignacion = $this->asignarService->crearAsignacion($validatedData);
+            // Verificar duplicado según el tipo de lugar de despacho
+            if (!empty($validatedData['sucursal_id'])) {
+                $yaExiste = Asigna::where('nota_venta', $validatedData['nota_venta'])
+                    ->where('sucursal_id', $validatedData['sucursal_id'])
+                    ->exists();
+                $tipoLabel = 'sucursal';
+            } else {
+                $yaExiste = Asigna::where('nota_venta', $validatedData['nota_venta'])
+                    ->where('lugar_despacho_cod', $validatedData['lugar_despacho_cod'])
+                    ->exists();
+                $tipoLabel = 'lugar de despacho';
+            }
+
+            if ($yaExiste) {
+                return redirect()
+                    ->back()
+                    ->with('error', "Ya existe una asignación para esta nota de venta y {$tipoLabel}.")
+                    ->withInput();
+            }
+
+            $this->asignarService->crearAsignacion($validatedData);
 
             return redirect()
                 ->route('asignar.index')
@@ -260,14 +332,16 @@ public function show($id)
     {
         try {
             $validatedData = $request->validate([
-                'nota_venta' => 'required|string',
-                'sucursal_id' => 'nullable|integer',
-                'asignado1' => 'nullable|exists:sh_instalador,id',
-                'asignado2' => 'nullable|exists:sh_instalador,id',
-                'asignado3' => 'nullable|exists:sh_instalador,id',
-                'asignado4' => 'nullable|exists:sh_instalador,id',
-                'fecha_asigna' => 'required|date',
-                'observaciones' => 'nullable|string',
+                'nota_venta'         => 'required|string',
+                'sucursal_id'        => 'nullable|integer',
+                'lugar_despacho_cod' => 'nullable|string|max:50',
+                'lugar_despacho_nom' => 'nullable|string|max:200',
+                'asignado1'          => 'nullable|exists:sh_instalador,id',
+                'asignado2'          => 'nullable|exists:sh_instalador,id',
+                'asignado3'          => 'nullable|exists:sh_instalador,id',
+                'asignado4'          => 'nullable|exists:sh_instalador,id',
+                'fecha_asigna'       => 'required|date',
+                'observaciones'      => 'nullable|string',
             ]);
 
             $asignacion = $this->asignarService->actualizarAsignacion($id, $validatedData);

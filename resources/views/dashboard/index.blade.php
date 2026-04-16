@@ -127,7 +127,15 @@
 
               <div>
                   <label class="block text-sm font-bold text-gray-700 mb-2">LUGAR DE DESPACHO</label>
-                  <template x-if="lugaresDespacho.length > 0">
+                  <!-- Ya tiene lugar asignado: mostrar como texto fijo -->
+                  <template x-if="lugarDespachoAsignado">
+                      <input type="text"
+                             :value="lugarDespachoAsignado"
+                             readonly
+                             class="w-full px-3 py-2 bg-gray-100 border-2 border-gray-200 rounded-lg text-gray-900 cursor-not-allowed">
+                  </template>
+                  <!-- Sin lugar asignado pero hay opciones: mostrar select para elegir -->
+                  <template x-if="!lugarDespachoAsignado && lugaresDespacho.length > 0">
                       <select x-model="lugarSeleccionado"
                               class="w-full px-3 py-2 bg-white border-2 border-blue-400 rounded-lg text-gray-900">
                           <option value="">— Seleccionar —</option>
@@ -136,7 +144,8 @@
                           </template>
                       </select>
                   </template>
-                  <template x-if="lugaresDespacho.length === 0">
+                  <!-- Sin lugar asignado y sin opciones -->
+                  <template x-if="!lugarDespachoAsignado && lugaresDespacho.length === 0">
                       <input type="text"
                              :value="notaSeleccionada.lugar_despacho || 'Sin datos'"
                              readonly
@@ -269,15 +278,24 @@
                   </div>
 
                   <div x-show="!cargando" class="space-y-3">
-                      <template x-for="nota in notasVenta" :key="nota.nv_id">
+                      <template x-for="nota in notasVenta" :key="(nota.asignacion_id || '') + '-' + nota.nv_folio">
                           <button @click="seleccionarNota(nota)"
                                   class="w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group">
                               <div class="flex justify-between items-start">
-                                  <div>
+                                  <div class="flex-1 min-w-0">
                                       <p class="font-bold text-gray-900 group-hover:text-blue-700" x-text="'NV-' + String(nota.nv_folio).padStart(6, '0')"></p>
                                       <p class="text-sm text-gray-600 mt-1" x-text="'Cliente: ' + nota.nv_cliente"></p>
+                                      <template x-if="nota.lugar_despacho">
+                                          <p class="mt-1.5">
+                                              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
+                                                    :class="nota.lugar_tipo === 'portal' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'">
+                                                  <span x-text="nota.lugar_tipo === 'portal' ? '📍' : '🚚'"></span>
+                                                  <span x-text="nota.lugar_despacho"></span>
+                                              </span>
+                                          </p>
+                                      </template>
                                   </div>
-                                  <span class="px-3 py-1 text-xs font-medium rounded-full"
+                                  <span class="ml-2 flex-shrink-0 px-3 py-1 text-xs font-medium rounded-full"
                                         :class="{
                                             'bg-green-100 text-green-700': nota.nv_estado === 'Activo',
                                             'bg-yellow-100 text-yellow-700': nota.nv_estado === 'Pendiente',
@@ -345,10 +363,12 @@ function dashboardData() {
             vendedor: '',
             estado: '',
             fecha_emision: '',
-            fecha_entrega: ''
+            fecha_entrega: '',
+            asignacion_id: null
         },
         lugaresDespacho: [],
         lugarSeleccionado: '',
+        lugarDespachoAsignado: '',
         asignacion: {
             fecha_asigna: '',
             observaciones: '',
@@ -373,7 +393,11 @@ function dashboardData() {
 
                 if (data.success) {
                     this.notaSeleccionada = data.data.nota_venta;
-                    this.cargarLugaresDespacho(data.data.nota_venta.folio, data.data.asignacion?.sucursal?.nombre ?? null);
+                    const preseleccionado = data.data.asignacion?.sucursal?.nombre
+                        ?? data.data.asignacion?.lugar_despacho_nom
+                        ?? null;
+                    this.lugarDespachoAsignado = preseleccionado || '';
+                    this.cargarLugaresDespacho(data.data.nota_venta.folio, preseleccionado);
 
                     if (data.data.asignacion) {
                         this.asignacion = data.data.asignacion;
@@ -438,12 +462,17 @@ function dashboardData() {
         async seleccionarNota(nota) {
             this.cargando = true;
             try {
-                const response = await fetch(`/dashboard/detalles-nv?folio=${nota.nv_folio}`);
+                const asignacionParam = nota.asignacion_id ? `&asignacion_id=${nota.asignacion_id}` : '';
+                const response = await fetch(`/dashboard/detalles-nv?folio=${nota.nv_folio}${asignacionParam}`);
                 const data = await response.json();
 
                 if (data.success) {
                     this.notaSeleccionada = data.data.nota_venta;
-                    this.cargarLugaresDespacho(data.data.nota_venta.folio, data.data.asignacion?.sucursal?.nombre ?? null);
+                    const preseleccionado = data.data.asignacion?.sucursal?.nombre
+                        ?? data.data.asignacion?.lugar_despacho_nom
+                        ?? null;
+                    this.lugarDespachoAsignado = preseleccionado || '';
+                    this.cargarLugaresDespacho(data.data.nota_venta.folio, preseleccionado);
 
                     if (data.data.asignacion) {
                         this.asignacion = data.data.asignacion;
@@ -476,10 +505,9 @@ function dashboardData() {
                         codigo: s.nombre,
                         label: s.direccion ? `${s.nombre} — ${s.direccion}` : s.nombre,
                     }));
-                    if (preseleccionado) {
-                        this.lugarSeleccionado = preseleccionado;
-                    } else if (data.sucursales.length === 1) {
-                        this.lugarSeleccionado = data.sucursales[0].nombre;
+                    // Auto-seleccionar solo cuando no hay lugar asignado y hay una única opción
+                    if (!preseleccionado && data.sucursales.length === 1) {
+                        this.lugarSeleccionado = this.lugaresDespacho[0].codigo;
                     }
                 }
             } catch (error) {
@@ -489,7 +517,7 @@ function dashboardData() {
 
         abrirPlano() {
             if (!this.notaSeleccionada.folio) return;
-            const lugar = this.lugarSeleccionado || this.notaSeleccionada.lugar_despacho;
+            const lugar = this.lugarSeleccionado || this.lugarDespachoAsignado || this.notaSeleccionada.lugar_despacho;
             const url = `dashboard/fft/${this.notaSeleccionada.folio}` + (lugar ? `?lugar_despacho=${encodeURIComponent(lugar)}` : '');
             window.open(url, '_blank');
             showAlert('info', `Abriendo FFT: NV-${this.notaSeleccionada.folio_formateado}`);
@@ -497,7 +525,7 @@ function dashboardData() {
 
         abrirOC() {
             if (!this.notaSeleccionada.folio) return;
-            const lugar = this.lugarSeleccionado || this.notaSeleccionada.lugar_despacho;
+            const lugar = this.lugarSeleccionado || this.lugarDespachoAsignado || this.notaSeleccionada.lugar_despacho;
             const url = `dashboard/oc/${this.notaSeleccionada.folio}` + (lugar ? `?lugar_despacho=${encodeURIComponent(lugar)}` : '');
             window.open(url, '_blank');
             showAlert('success', `Abriendo OC: NV-${this.notaSeleccionada.folio_formateado}`);
@@ -505,17 +533,24 @@ function dashboardData() {
 
         abrirHerraje() {
             if (!this.notaSeleccionada.folio) return;
-            window.location.href = `dashboard/herrajes/${this.notaSeleccionada.folio}`;
+            const lugar = this.lugarSeleccionado || this.lugarDespachoAsignado || this.notaSeleccionada.lugar_despacho;
+            const params = new URLSearchParams();
+            if (lugar) params.set('lugar_despacho', lugar);
+            if (this.notaSeleccionada.asignacion_id) params.set('asignacion_id', this.notaSeleccionada.asignacion_id);
+            const qs = params.toString();
+            window.location.href = `dashboard/herrajes/${this.notaSeleccionada.folio}` + (qs ? `?${qs}` : '');
         },
 
         abrirChecklist() {
             if (!this.notaSeleccionada.folio) return;
-            window.location.href = `/dashboard/checklist/${this.notaSeleccionada.folio}`;
+            const asignacionParam = this.notaSeleccionada.asignacion_id ? `?asignacion=${this.notaSeleccionada.asignacion_id}` : '';
+            window.location.href = `/dashboard/checklist/${this.notaSeleccionada.folio}${asignacionParam}`;
         },
 
         abrirEvidencia() {
             if (!this.notaSeleccionada.folio) return;
-            window.location.href = `/dashboard/evidencias/${this.notaSeleccionada.folio}`;
+            const asignacionParam = this.notaSeleccionada.asignacion_id ? `?asignacion=${this.notaSeleccionada.asignacion_id}` : '';
+            window.location.href = `/dashboard/evidencias/${this.notaSeleccionada.folio}${asignacionParam}`;
         }
     }
 }

@@ -10,11 +10,31 @@
             </div>
             <div>
                 <p class="text-xs text-gray-500">Estado</p>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                             bg-{{ $asignacion->estado_badge['color'] }}-100 
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                             bg-{{ $asignacion->estado_badge['color'] }}-100
                              text-{{ $asignacion->estado_badge['color'] }}-800">
                     {{ $asignacion->estado_badge['text'] }}
                 </span>
+            </div>
+            <div class="col-span-2">
+                <p class="text-xs text-gray-500 mb-1">Lugar de Despacho</p>
+                @if($asignacion->sucursal_id && $asignacion->sucursal)
+                    <div class="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                        <span class="text-blue-500">📍</span>
+                        <span class="text-sm font-semibold text-blue-900">{{ $asignacion->sucursal->nombre }}</span>
+                        @if($asignacion->sucursal->direccion)
+                            <span class="text-xs text-blue-600">— {{ $asignacion->sucursal->direccion }}</span>
+                        @endif
+                    </div>
+                @elseif($asignacion->lugar_despacho_nom)
+                    <div class="flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg">
+                        <span class="text-orange-500">🚚</span>
+                        <span class="text-sm font-semibold text-orange-900">{{ $asignacion->lugar_despacho_nom }}</span>
+                        <span class="text-xs text-orange-500">({{ $asignacion->lugar_despacho_cod }})</span>
+                    </div>
+                @else
+                    <span class="text-xs text-gray-400 italic">Sin lugar de despacho definido</span>
+                @endif
             </div>
             <div>
                 <p class="text-xs text-gray-500">Solicitado por</p>

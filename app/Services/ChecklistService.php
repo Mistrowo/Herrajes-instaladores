@@ -19,13 +19,16 @@ class ChecklistService
 
     /**
      * Obtener asignación y checklist por folio
+     * Si se proporciona $asignacionId, carga esa asignación específica (caso múltiples sucursales por folio)
      */
-    public function getByFolio(int $folio): array
+    public function getByFolio(int $folio, ?int $asignacionId = null): array
     {
-        $asignacion = Asigna::where('nota_venta', $folio)
-            ->with('sucursal')
-            ->firstOrFail();
-            
+        $query = Asigna::where('nota_venta', $folio)->with('sucursal');
+
+        $asignacion = $asignacionId
+            ? $query->where('id', $asignacionId)->firstOrFail()
+            : $query->firstOrFail();
+
         $checklist = Checklist::where('asigna_id', $asignacion->id)
             ->with('sucursal')
             ->first();

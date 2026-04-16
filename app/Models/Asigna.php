@@ -15,6 +15,8 @@ class Asigna extends Model
     protected $fillable = [
         'nota_venta',
         'sucursal_id',
+        'lugar_despacho_cod',
+        'lugar_despacho_nom',
         'fecha_asigna',
         'asignado1',
         'asignado2',
