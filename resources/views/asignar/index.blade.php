@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Asignar Instaladores')
 
@@ -397,9 +397,9 @@
                                 @if($asig->sucursal_id && $asig->sucursal)
                                     <span class="text-sm text-gray-700">📍 {{ $asig->sucursal->nombre }}</span>
                                 @elseif($asig->lugar_despacho_nom)
-                                    <span class="text-sm text-orange-700">�️ {{ $asig->lugar_despacho_nom }}</span>
+                                    <span class="text-sm text-orange-700">&#x1F69A; {{ $asig->lugar_despacho_nom }}</span>
                                 @elseif($asig->lugar_despacho_cod)
-                                    <span class="text-sm text-orange-700">�️ {{ $asig->lugar_despacho_cod }}</span>
+                                    <span class="text-sm text-orange-700">&#x1F69A; {{ $asig->lugar_despacho_cod }}</span>
                                 @else
                                     <span class="text-sm text-gray-400">-</span>
                                 @endif

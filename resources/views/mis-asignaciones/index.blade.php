@@ -181,12 +181,12 @@
                                 </div>
                             @elseif($asignacion->lugar_despacho_nom)
                                 <div class="flex items-center gap-1.5">
-                                    <span class="text-orange-500">🚚</span>
+                                    <span class="text-orange-500">&#x1F69A;</span>
                                     <span class="text-sm font-medium text-gray-800">{{ $asignacion->lugar_despacho_nom }}</span>
                                 </div>
                             @elseif($asignacion->lugar_despacho_cod)
                                 <div class="flex items-center gap-1.5">
-                                    <span class="text-orange-500">🚚</span>
+                                    <span class="text-orange-500">&#x1F69A;</span>
                                     <span class="text-sm font-medium text-gray-800">{{ $asignacion->lugar_despacho_cod }}</span>
                                 </div>
                             @else
