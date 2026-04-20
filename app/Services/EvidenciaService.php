@@ -40,7 +40,7 @@ class EvidenciaService
             'notaVenta' => $notaVenta,
             'asignacion' => $asignacion,
             'evidencias' => $evidencias,
-            'lugarDespacho' => $asignacion?->sucursal?->nombre ?? $notaVenta->nv_lugardespacho,
+            'lugarDespacho' => $asignacion?->sucursal?->nombre ?? $asignacion?->lugar_despacho_nom ?? $notaVenta->nv_lugardespacho,
             'totalEvidencias' => $evidencias->count(),
         ];
     }
@@ -59,17 +59,23 @@ class EvidenciaService
         $instaladorId = Auth::check() ? Auth::id() : null;
 
         // Obtener asigna_id y sucursal_id si no se proporcionan
+        $lugarNom = null;
         if (!$asignaId) {
             $asignacion = Asigna::where('nota_venta', $folio)->first();
             $asignaId = $asignacion?->id;
             $sucursalId ??= $asignacion?->sucursal_id;
+            $lugarNom = $asignacion?->lugar_despacho_nom;
         }
 
         // Generar nombre único (siempre jpg tras comprimir)
         $nombreArchivo = time() . '_' . uniqid() . '.jpg';
-        $carpeta = $sucursalId
-            ? "evidencias/{$folio}/{$sucursalId}"
-            : "evidencias/{$folio}";
+        if ($sucursalId) {
+            $carpeta = "evidencias/{$folio}/{$sucursalId}";
+        } elseif ($lugarNom) {
+            $carpeta = "evidencias/{$folio}/" . \Illuminate\Support\Str::slug($lugarNom);
+        } else {
+            $carpeta = "evidencias/{$folio}";
+        }
         $rutaRelativa = "{$carpeta}/{$nombreArchivo}";
         $rutaAbsoluta = storage_path("app/public/{$rutaRelativa}");
 
