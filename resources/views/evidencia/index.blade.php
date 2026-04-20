@@ -64,6 +64,7 @@
 
             <form action="{{ route('evidencias.store', $folio) }}" method="POST" enctype="multipart/form-data" class="p-6">
                 @csrf
+                <input type="hidden" name="asigna_id" value="{{ $asignacion?->id }}">
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Columna Izquierda: Imagen -->

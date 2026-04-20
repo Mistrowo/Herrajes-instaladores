@@ -63,6 +63,7 @@
         {{-- Formulario --}}
         <form id="checklistForm" action="{{ route('checklist.store', $asignacion->nota_venta) }}" method="POST" class="space-y-5">
             @csrf
+            <input type="hidden" name="asignacion_id" value="{{ $asignacion->id }}">
 
             {{-- LUGAR DE DESPACHO --}}
             <div class="bg-white rounded-xl shadow-md border-2 border-blue-200 p-6">

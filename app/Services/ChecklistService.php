@@ -42,7 +42,7 @@ class ChecklistService
     /**
      * Guardar o actualizar checklist
      */
-    public function storeOrUpdate(int $folio, array $data): Checklist
+    public function storeOrUpdate(int $folio, array $data, ?int $asignacionId = null): Checklist
     {
         try {
             DB::beginTransaction();
@@ -54,7 +54,10 @@ class ChecklistService
             ]);
 
             // Obtener asignación
-            $asignacion = Asigna::where('nota_venta', $folio)->firstOrFail();
+            $query = Asigna::where('nota_venta', $folio);
+            $asignacion = $asignacionId
+                ? $query->where('id', $asignacionId)->firstOrFail()
+                : $query->firstOrFail();
             
             // Obtener instalador autenticado
             $instalador = Auth::user();

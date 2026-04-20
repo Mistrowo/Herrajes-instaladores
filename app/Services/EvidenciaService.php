@@ -23,11 +23,14 @@ class EvidenciaService
     /**
      * Obtener todas las evidencias de un folio con sucursales disponibles
      */
-    public function getEvidenciasByFolio(string $folio): array
+    public function getEvidenciasByFolio(string $folio, ?int $asignacionId = null): array
     {
         $notaVenta = NotaVtaActualiza::where('nv_folio', $folio)->firstOrFail();
 
-        $asignacion = Asigna::where('nota_venta', $folio)->with('sucursal')->first();
+        $query = Asigna::where('nota_venta', $folio)->with('sucursal');
+        $asignacion = $asignacionId
+            ? $query->where('id', $asignacionId)->first()
+            : $query->first();
 
         $evidencias = EvidenciaFotografica::where('nota_venta', $folio)
             ->with('instalador')

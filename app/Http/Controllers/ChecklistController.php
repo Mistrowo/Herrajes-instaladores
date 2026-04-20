@@ -70,7 +70,8 @@ class ChecklistController extends Controller
         ]);
 
         try {
-            $checklist = $this->checklistService->storeOrUpdate($folio, $request->all());
+            $asignacionId = $request->input('asignacion_id') ? (int) $request->input('asignacion_id') : null;
+            $checklist = $this->checklistService->storeOrUpdate($folio, $request->all(), $asignacionId);
 
             Log::info('ChecklistController: Checklist guardado exitosamente', [
                 'checklist_id' => $checklist->id,
