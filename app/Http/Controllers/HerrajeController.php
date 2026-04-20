@@ -57,7 +57,7 @@ class HerrajeController extends Controller
             $sucursalId = $asigna ? $asigna->sucursal_id : null;
 
             // Obtener o crear herraje
-            $herraje = $this->herrajeService->obtenerOCrearHerraje($folio, Auth::id(), $sucursalId);
+            $herraje = $this->herrajeService->obtenerOCrearHerraje($folio, Auth::id(), $sucursalId, $asigna?->id);
 
             // Cargar relaciones
             $herraje->load(['items', 'instalador', 'asigna', 'sucursal']);

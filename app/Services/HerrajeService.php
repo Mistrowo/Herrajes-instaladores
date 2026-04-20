@@ -19,17 +19,23 @@ class HerrajeService
         $this->sucursalService = $sucursalService;
     }
 
-    public function obtenerOCrearHerraje(int $folio, ?int $userId = null, ?int $sucursalId = null): Herraje
+    public function obtenerOCrearHerraje(int $folio, ?int $userId = null, ?int $sucursalId = null, ?int $asignaId = null): Herraje
     {
-        Log::info('SERVICE: obtenerOCrearHerraje', compact('folio', 'userId', 'sucursalId'));
+        Log::info('SERVICE: obtenerOCrearHerraje', compact('folio', 'userId', 'sucursalId', 'asignaId'));
+
+        $clave = ['nv_folio' => $folio];
+        if ($asignaId) {
+            $clave['asigna_id'] = $asignaId;
+        }
 
         $herraje = Herraje::firstOrCreate(
-            ['nv_folio' => $folio],
+            $clave,
             [
-                'estado'         => 'en_revision',
-                'sucursal_id'    => $sucursalId,
-                'created_by'     => $userId,
-                'items_count'    => 0,
+                'estado'      => 'en_revision',
+                'asigna_id'   => $asignaId,
+                'sucursal_id' => $sucursalId,
+                'created_by'  => $userId,
+                'items_count' => 0,
             ]
         );
 
