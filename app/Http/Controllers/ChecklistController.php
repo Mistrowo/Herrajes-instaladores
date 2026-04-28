@@ -99,14 +99,16 @@ class ChecklistController extends Controller
     /**
      * Descargar PDF del checklist
      */
-    public function downloadPdf(int $folio)
+    public function downloadPdf(Request $request, int $folio)
     {
         Log::info('ChecklistController: downloadPdf', ['folio' => $folio]);
 
         try {
+            $asignacionId = $request->query('asignacion') ? (int) $request->query('asignacion') : null;
+
             // Obtener datos del checklist
-            $data = $this->checklistService->getByFolio($folio);
-            
+            $data = $this->checklistService->getByFolio($folio, $asignacionId);
+
             if (!$data['checklist']) {
                 return redirect()
                     ->route('checklist.index', $folio)
@@ -117,12 +119,17 @@ class ChecklistController extends Controller
             $checklist->load(['instalador']);
 
             $nota = NotaVtaActualiza::where('nv_folio', $folio)->first();
+            $asignacion = $data['asignacion'];
+
+            $lugarDespacho = $asignacion?->sucursal?->nombre
+                ?? $asignacion?->lugar_despacho_nom
+                ?? $nota?->nv_lugardespacho;
 
             // Generar PDF
             $pdf = Pdf::loadView('checklist.pdf', [
-                'checklist' => $checklist,
-                'asignacion' => $data['asignacion'],
-                'lugarDespacho' => $nota?->nv_lugardespacho,
+                'checklist'    => $checklist,
+                'asignacion'   => $asignacion,
+                'lugarDespacho'=> $lugarDespacho,
             ]);
 
             // Configurar PDF
