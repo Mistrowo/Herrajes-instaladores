@@ -380,16 +380,16 @@ public function show($id)
     /**
      * Cambiar estado de asignación
      */
-    public function cambiarEstado(Request $request, $id)
+    public function cambiarEstado(Request $request, $id, $estado)
     {
         try {
-            $request->validate([
-                'estado' => 'required|in:pendiente,aceptada,rechazada,en_proceso,completada'
-            ]);
+            if (!in_array($estado, ['pendiente', 'aceptada', 'rechazada', 'en_proceso', 'completada'])) {
+                return response()->json(['success' => false, 'message' => 'Estado inválido.'], 422);
+            }
 
             $asignacion = $this->asignarService->cambiarEstadoAsignacion(
                 $id,
-                $request->estado
+                $estado
             );
 
             return response()->json([
