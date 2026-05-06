@@ -92,7 +92,7 @@
       </form>
       
       <div class="mt-6 pt-4 border-t border-gray-100 text-xs text-gray-500">
-        © {{ date('Y') }} Ohffice | Todos los derechos reservados
+        © {{ date('Y') }} Ilesa | Todos los derechos reservados
       </div>
     </div>
   </div>

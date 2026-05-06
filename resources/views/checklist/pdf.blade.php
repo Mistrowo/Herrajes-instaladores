@@ -223,7 +223,7 @@
     <!-- HEADER -->
     <div class="header">
         <h1>CHECKLIST DE INSTALACION</h1>
-        <p>Sistema Herrajes - Ohffice</p>
+        <p>Sistema Herrajes - Ilesa</p>
     </div>
     
     <!-- INFORMACIÓN GENERAL -->
@@ -514,7 +514,7 @@
     <!-- FOOTER -->
     <div class="footer">
         <p>Documento generado el {{ date('d/m/Y H:i') }}</p>
-        <p>Sistema Herrajes - Ohffice &copy; {{ date('Y') }}</p>
+        <p>Sistema Herrajes - Ilesa &copy; {{ date('Y') }}</p>
     </div>
     
 </body>

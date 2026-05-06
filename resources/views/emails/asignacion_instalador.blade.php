@@ -15,12 +15,8 @@
                 {{-- Header --}}
                 <tr>
                     <td style="background: linear-gradient(135deg, #1e3a5f, #2563eb); padding: 28px 30px; text-align:center;">
-                        <p style="margin:0; color:#ffffff; font-size:22px; font-weight:bold; letter-spacing:1px;">
-                            Sistema de Instalaciones
-                        </p>
-                        <p style="margin:6px 0 0; color:#bfdbfe; font-size:13px; letter-spacing:0.5px;">
-                            Gestión de Herrajes y Proyectos
-                        </p>
+                        <img src="{{ $message->embed(public_path('logo/logo_ilesa.png')) }}"
+                             height="60" style="max-height:60px; display:block; margin:0 auto;" alt="Ilesa">
                     </td>
                 </tr>
 
@@ -102,7 +98,8 @@
                 {{-- Footer --}}
                 <tr>
                     <td style="background:#f8f8f8; border-top:3px solid #1e3a5f; padding:22px 30px; text-align:center;">
-                        <p style="font-size:13px; color:#555; font-weight:bold; margin:0 0 4px;">Sistema de Instalaciones</p>
+                        <img src="{{ $message->embed(public_path('logo/logo_ilesa.png')) }}"
+                             height="38" style="max-height:38px; display:block; margin:0 auto 10px;" alt="Ilesa">
                         <p style="font-size:11px; color:#aaa; margin:0;">Este es un mensaje autom&#225;tico, por favor no responda a este correo.</p>
                     </td>
                 </tr>

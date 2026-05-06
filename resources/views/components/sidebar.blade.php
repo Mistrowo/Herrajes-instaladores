@@ -25,7 +25,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-white font-bold text-lg">Ohffice</h1>
+                    <h1 class="text-white font-bold text-lg">Ilesa</h1>
                     <p class="text-blue-200 text-xs">Sistema Herrajes</p>
                 </div>
             </div>
@@ -123,7 +123,7 @@
             </form>
             
             <div class="mt-3 text-center text-xs text-blue-200">
-                © {{ date('Y') }} Ohffice
+                © {{ date('Y') }} Ilesa
             </div>
         </div>
         
