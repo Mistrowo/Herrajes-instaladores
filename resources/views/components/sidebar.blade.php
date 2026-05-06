@@ -25,7 +25,7 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-white font-bold text-lg">Ilesa</h1>
+                    <h1 class="text-white font-bold text-lg">Ohffice</h1>
                     <p class="text-blue-200 text-xs">Sistema Herrajes</p>
                 </div>
             </div>
@@ -84,10 +84,24 @@
             
             @can('admin-only')
                 <div class="pt-4 pb-2">
+                    <p class="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider">Supervisión</p>
+                </div>
+
+                <a href="{{ route('supervision.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all
+                          {{ request()->routeIs('supervision.*') ? 'bg-white/20 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span>Seguimiento NV</span>
+                </a>
+
+                <div class="pt-4 pb-2">
                     <p class="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider">Administración</p>
                 </div>
 
-                <a href="{{ route('asignar.index') }}" 
+                <a href="{{ route('asignar.index') }}"
                    class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all
                           {{ request()->routeIs('asignar.*') ? 'bg-white/20 text-white shadow-lg' : 'text-blue-100 hover:bg-white/10 hover:text-white' }}">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,7 +137,7 @@
             </form>
             
             <div class="mt-3 text-center text-xs text-blue-200">
-                © {{ date('Y') }} Ilesa
+                © {{ date('Y') }} Ohffice
             </div>
         </div>
         

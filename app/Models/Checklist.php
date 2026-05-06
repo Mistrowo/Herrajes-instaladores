@@ -183,6 +183,62 @@ class Checklist extends Model
         return $this->getCompletionPercentage() === 100;
     }
 
+    public function getCompletionBySection(): array
+    {
+        $sections = [
+            'proyecto' => [
+                'label'  => 'Proyecto / Pedido',
+                'icon'   => 'document',
+                'fields' => ['rectificacion_medidas', 'planos_actualizados', 'planos_muebles_especiales', 'modificaciones_realizadas', 'despacho_integral', 'telefono'],
+            ],
+            'estado_obra' => [
+                'label'  => 'Estado de Obra',
+                'icon'   => 'office-building',
+                'fields' => ['instalacion_cielo', 'instalacion_piso', 'remate_muros', 'nivelacion_piso', 'muros_plomo', 'instalacion_electrica', 'instalacion_voz_dato'],
+            ],
+            'inspeccion' => [
+                'label'  => 'Inspección Final',
+                'icon'   => 'clipboard-check',
+                'fields' => ['paneles_alineados', 'nivelacion_cubiertas', 'pasacables_instalados', 'limpieza_cubiertas', 'limpieza_cajones', 'limpieza_piso', 'llaves_instaladas', 'funcionamiento_mueble', 'puntos_electricos', 'sillas_ubicadas', 'accesorios', 'check_herramientas'],
+            ],
+        ];
+
+        $result = [];
+        foreach ($sections as $key => $section) {
+            $total     = count($section['fields']);
+            $completed = 0;
+            foreach ($section['fields'] as $field) {
+                if ($this->$field === 'SI' || $this->$field === 'NO') {
+                    $completed++;
+                }
+            }
+            $result[$key] = [
+                'label'      => $section['label'],
+                'completed'  => $completed,
+                'total'      => $total,
+                'percentage' => $total ? round(($completed / $total) * 100) : 0,
+            ];
+        }
+
+        return $result;
+    }
+
+    public function getErrorNames(): array
+    {
+        $errores = [
+            'errores_ventas'        => 'Ventas',
+            'errores_diseno'        => 'Diseño',
+            'errores_rectificacion' => 'Rectificación',
+            'errores_produccion'    => 'Producción',
+            'errores_proveedor'     => 'Proveedor',
+            'errores_despacho'      => 'Despacho',
+            'errores_instalacion'   => 'Instalación',
+            'errores_otro'          => 'Otro',
+        ];
+
+        return array_filter($errores, fn($_, $campo) => $this->$campo === 'SI', ARRAY_FILTER_USE_BOTH);
+    }
+
     // Scopes
     public function scopeWithErrors($query)
     {
@@ -225,8 +281,8 @@ class Checklist extends Model
     // Accessors
     public function getFechaCompletadoFormateadaAttribute(): string
     {
-        return $this->fecha_completado 
-            ? $this->fecha_completado->format('d/m/Y H:i') 
+        return $this->fecha_completado
+            ? \Carbon\Carbon::parse($this->fecha_completado)->format('d/m/Y H:i')
             : 'Pendiente';
     }
 

@@ -9,5 +9,6 @@ require __DIR__.'/modules//herrajes.php';
 require __DIR__.'/modules//evidencia.php';
 require __DIR__.'/modules//checklist.php';
 require __DIR__.'/modules//extra.php';
+require __DIR__.'/modules/supervision.php';
 
 

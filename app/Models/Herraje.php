@@ -45,6 +45,16 @@ class Herraje extends Model
         return $this->belongsTo(Instalador::class, 'instalador_id');
     }
 
+    public function creador()
+    {
+        return $this->belongsTo(Instalador::class, 'created_by');
+    }
+
+    public function getInstaladorNombreAttribute(): string
+    {
+        return $this->instalador?->nombre ?? $this->creador?->nombre ?? 'N/A';
+    }
+
     // ⭐ NUEVA RELACIÓN
     public function sucursal()
     {
