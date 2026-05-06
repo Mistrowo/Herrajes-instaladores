@@ -6,9 +6,9 @@
     <title>@yield('title', 'Auth')</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('logo/logo_ilesa.png') }}">
-    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('logo/logo_ilesa.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('logo/logo_ilesa.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('logo/logo_oh.png') }}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('logo/logo_oh.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('logo/logo_oh.png') }}">
 
     
 

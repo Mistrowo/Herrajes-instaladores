@@ -6,7 +6,7 @@
 <div class="w-full max-w-md">
   <div class="bg-white shadow-xl rounded-lg overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
     <div class="p-6 text-center">
-      <img src="{{ asset('logo/logo_ilesa.png') }}" alt="Logo Ilesa"
+      <img src="{{ asset('logo/logo_oh.png') }}" alt="Logo Ohffice"
            class="mx-auto mb-2 transition-all duration-300 hover:scale-105" style="max-width: 180px;">
 
       <h2 class="text-2xl font-bold mb-6 text-gray-800">APP INSTALADORES</h2>
@@ -92,7 +92,7 @@
       </form>
       
       <div class="mt-6 pt-4 border-t border-gray-100 text-xs text-gray-500">
-        © {{ date('Y') }} Ilesa | Todos los derechos reservados
+        © {{ date('Y') }} Ohffice | Todos los derechos reservados
       </div>
     </div>
   </div>
