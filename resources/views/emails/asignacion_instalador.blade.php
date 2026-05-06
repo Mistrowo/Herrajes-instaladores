@@ -22,9 +22,15 @@
 
                 {{-- Banner informativo --}}
                 <tr>
+                    @if($esCambioDireccion)
+                    <td style="background:#fff7ed; border-left:5px solid #ea580c; padding:14px 30px;">
+                        <span style="font-size:14px; color:#9a3412; font-weight:bold;">&#9888;&#65039; Actualización de Dirección de Despacho</span>
+                    </td>
+                    @else
                     <td style="background:#eff6ff; border-left:5px solid #2563eb; padding:14px 30px;">
                         <span style="font-size:14px; color:#1e40af; font-weight:bold;">&#128196; Nueva Asignación de Proyecto</span>
                     </td>
+                    @endif
                 </tr>
 
                 {{-- Cuerpo --}}
@@ -35,10 +41,17 @@
                             Estimado/a <strong>{{ $instalador->nombre }}</strong>,
                         </p>
 
+                        @if($esCambioDireccion)
+                        <p style="font-size:14px; color:#555; line-height:1.7; margin:0 0 24px;">
+                            La <strong>dirección de despacho</strong> de tu asignación ha sido actualizada.
+                            Te informamos para que tengas la información correcta antes de dirigirte al lugar de trabajo.
+                        </p>
+                        @else
                         <p style="font-size:14px; color:#555; line-height:1.7; margin:0 0 24px;">
                             Se te ha asignado el siguiente proyecto. Ingresa a la aplicación para ver el detalle completo,
                             aceptar la asignación y registrar el avance del trabajo.
                         </p>
+                        @endif
 
                         {{-- Tabla detalle del proyecto --}}
                         <table width="100%" cellpadding="0" cellspacing="0" style="border-radius:7px; overflow:hidden; margin-bottom:24px;">
@@ -63,6 +76,12 @@
                                 <td style="padding:12px 18px; font-size:13px; color:#777; border-bottom:1px solid #eee;">Descripci&#243;n</td>
                                 <td style="padding:12px 18px; font-size:14px; color:#222; border-bottom:1px solid #eee;">
                                     {{ $notaVenta?->nv_descripcion ?? '—' }}
+                                </td>
+                            </tr>
+                            <tr style="background:#fafafa;">
+                                <td style="padding:12px 18px; font-size:13px; color:#777; border-bottom:1px solid #eee;">Direcci&#243;n de Despacho</td>
+                                <td style="padding:12px 18px; font-size:14px; color:#222; font-weight:bold; border-bottom:1px solid #eee;">
+                                    {{ $asignacion->lugar_despacho_nom ?? '—' }}
                                 </td>
                             </tr>
                             <tr style="background:#ffffff;">

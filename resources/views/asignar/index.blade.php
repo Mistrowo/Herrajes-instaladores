@@ -1099,6 +1099,21 @@ document.addEventListener('keydown', (e) => {
         cerrarModalDetalles();
     }
 });
+
+// Indicador de carga al enviar formularios que disparan correos
+function mostrarCargandoCorreo() {
+    Swal.fire({
+        title: 'Enviando correo...',
+        text: 'Estamos notificando a los instaladores asignados',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading()
+    });
+}
+
+document.querySelector('#modalAsignar form').addEventListener('submit', mostrarCargandoCorreo);
+document.getElementById('formEditar').addEventListener('submit', mostrarCargandoCorreo);
 </script>
 @endpush
 @endsection

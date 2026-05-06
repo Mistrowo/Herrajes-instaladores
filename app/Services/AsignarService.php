@@ -134,12 +134,15 @@ class AsignarService
     {
         $asignacion = Asigna::findOrFail($id);
 
-        $instaladoresAnteriores = [
+        $instaladoresAnteriores = array_filter([
             $asignacion->asignado1,
             $asignacion->asignado2,
             $asignacion->asignado3,
             $asignacion->asignado4,
-        ];
+        ]);
+
+        $direccionCambio = array_key_exists('lugar_despacho_nom', $datos)
+            && $datos['lugar_despacho_nom'] !== $asignacion->lugar_despacho_nom;
 
         $asignacion->update([
             'nota_venta'         => $datos['nota_venta'] ?? $asignacion->nota_venta,
@@ -161,10 +164,15 @@ class AsignarService
             $datos['asignado4'] ?? null,
         ]);
 
-        $recienAgregados = array_diff($nuevosIds, array_filter($instaladoresAnteriores));
+        $recienAgregados = array_diff($nuevosIds, $instaladoresAnteriores);
+        $yaExistentes    = array_intersect($nuevosIds, $instaladoresAnteriores);
 
         if (!empty($recienAgregados)) {
-            $this->notificarInstaladores($asignacion->fresh(), $recienAgregados);
+            $this->notificarInstaladores($asignacion->fresh(), $recienAgregados, false);
+        }
+
+        if ($direccionCambio && !empty($yaExistentes)) {
+            $this->notificarInstaladores($asignacion->fresh(), $yaExistentes, true);
         }
 
         return $asignacion->fresh();
@@ -382,7 +390,7 @@ class AsignarService
      * @param Asigna $asignacion
      * @param array $instaladorIds
      */
-    private function notificarInstaladores(Asigna $asignacion, array $instaladorIds): void
+    private function notificarInstaladores(Asigna $asignacion, array $instaladorIds, bool $esCambioDireccion = false): void
     {
         $ids = array_filter($instaladorIds);
 
@@ -401,7 +409,7 @@ class AsignarService
 
             try {
                 Mail::to($instalador->correo)
-                    ->send(new AsignacionInstaladorMail($asignacion, $instalador, $notaVenta));
+                    ->send(new AsignacionInstaladorMail($asignacion, $instalador, $notaVenta, $esCambioDireccion));
             } catch (\Exception $e) {
                 Log::error("Error al enviar email de asignación al instalador {$instalador->id}: " . $e->getMessage());
             }

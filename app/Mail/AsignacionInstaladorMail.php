@@ -19,13 +19,16 @@ class AsignacionInstaladorMail extends Mailable
         public Asigna $asignacion,
         public Instalador $instalador,
         public ?NotaVtaActualiza $notaVenta,
+        public bool $esCambioDireccion = false,
     ) {}
 
     public function envelope(): Envelope
     {
-        return new Envelope(
-            subject: 'Nueva Asignación de Proyecto - NV ' . $this->asignacion->nota_venta,
-        );
+        $subject = $this->esCambioDireccion
+            ? 'Actualización de Dirección de Despacho - NV ' . $this->asignacion->nota_venta
+            : 'Nueva Asignación de Proyecto - NV ' . $this->asignacion->nota_venta;
+
+        return new Envelope(subject: $subject);
     }
 
     public function content(): Content
