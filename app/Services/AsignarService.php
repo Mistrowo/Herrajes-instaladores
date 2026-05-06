@@ -2,12 +2,15 @@
 
 namespace App\Services;
 
+use App\Mail\AsignacionInstaladorMail;
 use App\Models\Asigna;
 use App\Models\NotaVtaActualiza;
 use App\Models\Instalador;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class AsignarService
 {
@@ -95,7 +98,7 @@ class AsignarService
      */
     public function crearAsignacion(array $datos): Asigna
     {
-        return Asigna::create([
+        $asignacion = Asigna::create([
             'nota_venta'         => $datos['nota_venta'],
             'sucursal_id'        => $datos['sucursal_id'] ?? null,
             'lugar_despacho_cod' => $datos['lugar_despacho_cod'] ?? null,
@@ -109,6 +112,15 @@ class AsignarService
             'estado'             => 'pendiente',
             'observaciones'      => $datos['observaciones'] ?? null,
         ]);
+
+        $this->notificarInstaladores($asignacion, [
+            $datos['asignado1'] ?? null,
+            $datos['asignado2'] ?? null,
+            $datos['asignado3'] ?? null,
+            $datos['asignado4'] ?? null,
+        ]);
+
+        return $asignacion;
     }
 
     /**
@@ -121,7 +133,14 @@ class AsignarService
     public function actualizarAsignacion(int $id, array $datos): Asigna
     {
         $asignacion = Asigna::findOrFail($id);
-        
+
+        $instaladoresAnteriores = [
+            $asignacion->asignado1,
+            $asignacion->asignado2,
+            $asignacion->asignado3,
+            $asignacion->asignado4,
+        ];
+
         $asignacion->update([
             'nota_venta'         => $datos['nota_venta'] ?? $asignacion->nota_venta,
             'sucursal_id'        => array_key_exists('sucursal_id', $datos) ? $datos['sucursal_id'] : $asignacion->sucursal_id,
@@ -134,6 +153,19 @@ class AsignarService
             'asignado4'          => $datos['asignado4'] ?? $asignacion->asignado4,
             'observaciones'      => $datos['observaciones'] ?? $asignacion->observaciones,
         ]);
+
+        $nuevosIds = array_filter([
+            $datos['asignado1'] ?? null,
+            $datos['asignado2'] ?? null,
+            $datos['asignado3'] ?? null,
+            $datos['asignado4'] ?? null,
+        ]);
+
+        $recienAgregados = array_diff($nuevosIds, array_filter($instaladoresAnteriores));
+
+        if (!empty($recienAgregados)) {
+            $this->notificarInstaladores($asignacion->fresh(), $recienAgregados);
+        }
 
         return $asignacion->fresh();
     }
@@ -342,5 +374,37 @@ class AsignarService
             ->activas()
             ->orderBy('fecha_asigna', 'desc')
             ->get();
+    }
+
+    /**
+     * Enviar correo de notificación a los instaladores indicados
+     *
+     * @param Asigna $asignacion
+     * @param array $instaladorIds
+     */
+    private function notificarInstaladores(Asigna $asignacion, array $instaladorIds): void
+    {
+        $ids = array_filter($instaladorIds);
+
+        if (empty($ids)) {
+            return;
+        }
+
+        $notaVenta = NotaVtaActualiza::where('nv_folio', $asignacion->nota_venta)->first();
+
+        $instaladores = Instalador::whereIn('id', $ids)->get();
+
+        foreach ($instaladores as $instalador) {
+            if (empty($instalador->correo)) {
+                continue;
+            }
+
+            try {
+                Mail::to($instalador->correo)
+                    ->send(new AsignacionInstaladorMail($asignacion, $instalador, $notaVenta));
+            } catch (\Exception $e) {
+                Log::error("Error al enviar email de asignación al instalador {$instalador->id}: " . $e->getMessage());
+            }
+        }
     }
 }
